@@ -1,0 +1,21 @@
+name: Plugin tests
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.12.13"
+      - uses: actions/checkout@v4
+        with:
+          repository: lendevs/LenBot
+          ref: master
+          path: host-source
+      - run: uv python install 3.13
+      - run: uv venv --python 3.13
+      - run: uv pip install ./host-source pytest pytest-asyncio
+      - run: cd plugin && uv run --no-sync pytest -q

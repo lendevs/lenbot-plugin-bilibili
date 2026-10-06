@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The repository root is the plugin package itself; keep pytest from collecting it as a test package.
+addopts = "--confcutdir=tests --import-mode=importlib"
+asyncio_mode = "auto"

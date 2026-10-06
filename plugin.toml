@@ -1,0 +1,131 @@
+name = "bilibili"
+version = "1.0.0"
+interface = 1
+requires_lenbot = ">=0.1,<1"
+requires_python = ">=3.13"
+platforms = ["linux", "darwin"]
+reload = "plugin"
+authors = ["LEN5010"]
+license = "AGPL-3.0-or-later"
+repository = "https://github.com/lendevs/lenbot-plugin-bilibili"
+description = "哔哩哔哩合集：公开视频/分P/WBI搜索/评论，主人明确授权的字幕、动态和固定点赞收藏动作；每30秒观察订阅直播间，开播/下播变化进入场景事件。"
+
+[config.rooms]
+label = "直播监测的直播间"
+type = "object_list"
+default = []
+description = "只有在启用了本插件的群里才会采样和提醒。"
+
+[config.rooms.fields.uid]
+type = "integer"
+label = "主播 UID"
+description = "主播的 B 站账号 UID"
+minimum = 1
+
+[config.rooms.fields.room_id]
+type = "integer"
+label = "房间号"
+description = "直播间房间号，短号也可以"
+minimum = 1
+
+[config.rooms.fields.name]
+type = "string"
+label = "名称"
+description = "提醒消息里用的名字"
+
+[config.rooms.fields.scenes]
+type = "scene_list"
+label = "提醒的群"
+description = "开播状态变化时通知这些群"
+default = []
+
+[config.live_api_url]
+label = "直播状态接口"
+group = "直播监测"
+type = "url"
+default = "https://api.live.bilibili.com/room/v1/Room/get_info"
+description = "唯一直播状态接口，按room_id查询；不自动切换地址。"
+
+[config.live_source_timezone]
+label = "源站时区"
+group = "直播监测"
+type = "string"
+default = "Asia/Shanghai"
+description = "源站live_time的时区；事件显示转换为各场景时区。"
+
+[config.request_timeout_seconds]
+label = "超时（秒）"
+group = "高级"
+type = "number"
+default = 15
+description = "每次HTTP请求超时秒数，失败不重试、不切换端点。"
+
+[config.max_subtitle_bytes]
+label = "字幕大小上限（字节）"
+group = "高级"
+type = "integer"
+default = 2000000
+description = "字幕JSON读取字节上限，超限报错，不返回残缺字幕。"
+
+[config.account_read_enabled]
+label = "允许用账号读取"
+group = "B 站账号"
+type = "boolean"
+default = false
+description = "允许主人登录态读取。写入也必须开启，以便独立核对不确定的动作结果。"
+
+[config.account_uid]
+label = "账号 UID"
+group = "B 站账号"
+type = "integer"
+default = 0
+description = "明确配置的真实B站账号UID；0表示未配置，不自动登录/推断账号。"
+
+[config.sessdata]
+label = "SESSDATA"
+group = "B 站账号"
+type = "secret"
+default = ""
+description = "主人账号SESSDATA，仅发送给固定B站API；不交给模型或任务。"
+
+[config.bili_jct]
+label = "bili_jct"
+group = "B 站账号"
+type = "secret"
+default = ""
+description = "写操作CSRF值（32位十六进制）。"
+
+[config.buvid3]
+label = "buvid3"
+group = "B 站账号"
+type = "secret"
+default = ""
+description = "运营提供的设备Cookie，搜索和点赞必需；不自动生成。公共请求不带SESSDATA。"
+
+[config.daily_like_limit]
+label = "每天点赞上限"
+group = "写操作额度"
+type = "integer"
+default = 0
+description = "同账号每天点赞/取消点赞写尝试上限；0关闭。结果未知和取消仍占一次，不自动重发。"
+
+[config.daily_favorite_limit]
+label = "每天收藏上限"
+group = "写操作额度"
+type = "integer"
+default = 0
+description = "同账号每天加入/移出收藏夹的写尝试上限；0关闭。"
+
+[config.allowed_collection_ids]
+label = "允许写入的收藏夹 ID"
+group = "写操作额度"
+type = "string_list"
+default = []
+description = "允许写入的完整收藏夹ID，每行一个正整数文本；写前核对实际账号归属。"
+
+[config.quota_timezone]
+label = "额度时区"
+group = "写操作额度"
+type = "string"
+default = "Asia/Shanghai"
+description = "账号每日额度的唯一时区，不随调用群改变。"
