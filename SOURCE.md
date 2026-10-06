@@ -1,6 +1,6 @@
 # 来源
 
-本仓库由 `lenbot-personal` 中的 `bilibili_content` 与 `bilibili_live` 两个插件合并而成（2026-10-05），协议实现未改动。
+本仓库由 `lenbot-personal` 中的 `bilibili_content` 与 `bilibili_live` 两个插件合并而成（2026-10-05），协议实现未改动。2026-10-06 加入关注推送和推送卡片。
 
 ## 视频内容（content.py、client.py、account.py、protocol.py）
 
@@ -17,3 +17,14 @@
 - 依据已核对协议独立实现新接口，不复制旧插件的动作审查、别名目录、claim状态、渲染回退或模型播报流程。
 - 源站当前在线协议和真实账号/平台未在本轮调用；本机合成观察不是实际开播验收。
 - 新插件代码采用 GNU AGPL v3 或更新版本，见LICENSE。
+
+## 关注推送（gateway.py、comment_journal.py、comment_capture.py、push.py）
+
+- `gateway.py`、`comment_journal.py`、`comment_capture.py` 来自仓库所有者自己的 AstrBot 插件 `astrbot_plugin_asoul` 的 `asoul_bilibili.py`、`asoul_comment_journal.py`、`asoul_comment_capture.py`，只改了模块导入；动态附加卡片的文字节点改标为 `attachment`，方便卡片单独绘制。对应测试 `test_bilibili_monitor.py`、`test_comment_journal.py`、`test_comment_capture.py` 一并移植。
+- `push.py` 按 AstrBot 版 `asoul_bilibili_runtime.py` 的轮询、错误分类和投递顺序重写：投递目标从 AstrBot 消息来源换成 LenBot 场景，状态存插件 KV 和数据目录，@全体 由配置决定，不查询剩余次数。
+- 依赖 `bilibili-api-python==17.4.1`（GPL-3.0-or-later），只用 httpx 客户端。`tests/data/dynamics.json` 是 2026-03-31 录制的公开空间动态页中的 3 条。
+
+## 卡片（card_kit.py、push_card.py、assets/font.ttf）
+
+- 版式按 LenBot 面板配色和标志重新设计，与 `lenbot-plugin-asoul` 各带一份。
+- `assets/font.ttf` 是更纱黑体 Sarasa Mono SC Light，取自 `astrbot_plugin_asoul/font.ttf`，按 SIL Open Font License 1.1 分发；粗体用同色描边模拟。

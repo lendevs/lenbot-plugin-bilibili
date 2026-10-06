@@ -1,0 +1,1892 @@
+{
+ "has_more": false,
+ "offset": "",
+ "items": [
+  {
+   "id_str": "1184775739475492867",
+   "type": "DYNAMIC_TYPE_DRAW",
+   "basic": {
+    "rid_str": "389437928",
+    "comment_type": 11,
+    "comment_id_str": "389437928",
+    "like_icon": {
+     "id": "0",
+     "start_url": "",
+     "action_url": "",
+     "end_url": ""
+    },
+    "in_audit": false,
+    "is_only_fans": false,
+    "editable": false,
+    "open_app_extra": "",
+    "jump_url": "//www.bilibili.com/opus/1184775739475492867",
+    "aigc": false
+   },
+   "visible": true,
+   "modules": {
+    "module_tag": null,
+    "module_author": {
+     "type": "AUTHOR_TYPE_NORMAL",
+     "avatar": {
+      "container_size": {
+       "width": 1.375,
+       "height": 1.375
+      },
+      "layers": [],
+      "fallback_layers": {
+       "group_id": "",
+       "layers": [
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 2,
+           "axis_x": 0.6875,
+           "axis_y": 0.6875
+          },
+          "size_spec": {
+           "width": 0.787,
+           "height": 0.787
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "AVATAR_LAYER": {
+            "config_type": 0
+           },
+           "GENERAL_CFG": {
+            "config_type": 1,
+            "general_config": {
+             "web_css_style": {
+              "borderRadius": "50%"
+             }
+            }
+           }
+          },
+          "is_critical": true,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 1,
+            "placeholder": 6,
+            "remote": {
+             "url": "https://i1.hdslb.com/bfs/face/83d32ed15b3534267d2c5b1cf1a07a9c1e389fb0.jpg",
+             "bfs_style": "widget-layer-avatar"
+            }
+           }
+          }
+         }
+        },
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 2,
+           "axis_x": 0.6875,
+           "axis_y": 0.6875
+          },
+          "size_spec": {
+           "width": 1.375,
+           "height": 1.375
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "PENDENT_LAYER": {
+            "config_type": 0
+           }
+          },
+          "is_critical": false,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 1,
+            "placeholder": 0,
+            "remote": {
+             "url": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+             "bfs_style": "widget-layer-avatar"
+            }
+           }
+          }
+         }
+        },
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 1,
+           "axis_x": 0.7560000000000001,
+           "axis_y": 0.7726666666666667
+          },
+          "size_spec": {
+           "width": 0.41666666666666663,
+           "height": 0.41666666666666663
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "GENERAL_CFG": {
+            "config_type": 1,
+            "general_config": {
+             "web_css_style": {
+              "background-color": "rgb(255,255,255)",
+              "border": "2px solid rgba(255,255,255,1)",
+              "borderRadius": "50%",
+              "boxSizing": "border-box"
+             }
+            }
+           },
+           "ICON_LAYER": {
+            "config_type": 0
+           }
+          },
+          "is_critical": false,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 2,
+            "placeholder": 0,
+            "local": 3
+           }
+          }
+         }
+        }
+       ],
+       "group_mask": null,
+       "is_critical_group": true
+      },
+      "mid": "672342685"
+     },
+     "face": "https://i1.hdslb.com/bfs/face/83d32ed15b3534267d2c5b1cf1a07a9c1e389fb0.jpg",
+     "face_nft": false,
+     "nft_info": null,
+     "name": "乃琳Queen",
+     "name_render": null,
+     "label": "",
+     "mid": 672342685,
+     "jump_url": "//space.bilibili.com/672342685/dynamic",
+     "following": false,
+     "pub_ts": "1774690498",
+     "pub_time": "3天前",
+     "pub_action": "",
+     "pub_location_text": "",
+     "pendant": {
+      "pid": -1061397063,
+      "name": "2025乃琳的酒馆",
+      "image": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+      "expire": "0",
+      "image_enhance": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+      "image_enhance_frame": "",
+      "n_pid": "1755580227001"
+     },
+     "vip": {
+      "type": 2,
+      "status": 1,
+      "due_date": "1776009600000",
+      "vip_pay_type": 0,
+      "theme_type": 0,
+      "label": {
+       "path": "http://i0.hdslb.com/bfs/vip/label_annual.png",
+       "text": "年度大会员",
+       "label_theme": "annual_vip",
+       "text_color": "#FFFFFF",
+       "bg_style": 1,
+       "bg_color": "#FB7299",
+       "border_color": "",
+       "use_img_label": true,
+       "img_label_uri_hans": "",
+       "img_label_uri_hant": "",
+       "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d4f8bfc713826a5412a0a27eaaac4d6b9ede1d9.png",
+       "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/VEW8fCC0hg.png"
+      },
+      "avatar_subscript": 1,
+      "nickname_color": "#FB7299",
+      "role": "3",
+      "avatar_subscript_url": "",
+      "tv_vip_status": 0,
+      "tv_vip_pay_type": 0,
+      "tv_due_date": "0",
+      "avatar_icon": {
+       "icon_type": 1,
+       "icon_resource": {
+        "type": 0,
+        "url": ""
+       }
+      }
+     },
+     "official_verify": {
+      "type": 0,
+      "desc": ""
+     },
+     "decorate": null,
+     "decoration_card": {
+      "id": "1692344457001",
+      "item_id": "1692344457001",
+      "name": " 脑洞波系列主题装扮-乃琳粉丝",
+      "card_url": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "big_card_url": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "card_type": "2",
+      "expire_time": "0",
+      "card_type_name": "免费",
+      "jump_url": "https://www.bilibili.com/h5/mall/equity-link/collect-home?item_id=1692344457001&isdiy=0&part=card&from=post&f_source=garb&vmid=672342685&native.theme=1&navhide=1",
+      "fan": {
+       "is_fan": "1",
+       "number": "1",
+       "color": "#596890",
+       "name": "脑洞波系列主题装扮-乃琳",
+       "num_desc": "000001",
+       "num_prefix": "",
+       "color_format": {
+        "start_point": "0,0",
+        "end_point": "0,100",
+        "colors": [
+         "#596890FF",
+         "#596890FF"
+        ],
+        "gradients": [
+         "0",
+         "100"
+        ]
+       }
+      },
+      "image_enhance": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "image_group": null
+     },
+     "is_top": false,
+     "icon_badge": null
+    },
+    "module_more": {
+     "rcmd_text": "",
+     "three_point_items": [
+      {
+       "label": "举报",
+       "type": "THREE_POINT_REPORT",
+       "params": {},
+       "modal": null,
+       "jump_url": ""
+      }
+     ]
+    },
+    "module_dispute": null,
+    "module_dynamic": {
+     "topic": null,
+     "desc": null,
+     "major": {
+      "type": "MAJOR_TYPE_OPUS",
+      "none": null,
+      "blocked": null,
+      "archive": null,
+      "pgc": null,
+      "courses": null,
+      "draw": null,
+      "article": null,
+      "music": null,
+      "common": null,
+      "upower_common": null,
+      "live": null,
+      "live_rcmd": null,
+      "medialist": null,
+      "subscription": null,
+      "ugc_season": null,
+      "subscription_new": null,
+      "opus": {
+       "jump_url": "//www.bilibili.com/opus/1184775739475492867",
+       "title": "",
+       "summary": {
+        "text": "急急急急急[2025乃琳的酒馆_来了]\n已经迫不及待想见到大家啦(⁎⁍̴̛ᴗ⁍̴̛⁎)\n小琳的身体和情绪都已经热起来了！[2025乃琳的酒馆_应援]\n",
+        "rich_text_nodes": [
+         {
+          "text": "急急急急急",
+          "orig_text": "急急急急急",
+          "type": "RICH_TEXT_NODE_TYPE_TEXT",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": null,
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         },
+         {
+          "text": "[2025乃琳的酒馆_来了]",
+          "orig_text": "[2025乃琳的酒馆_来了]",
+          "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": {
+           "type": "3",
+           "size": 2,
+           "text": "[2025乃琳的酒馆_来了]",
+           "icon_url": "https://i0.hdslb.com/bfs/garb/b113a0cfdee39f61578dccdd6327e0c19830ef84.png",
+           "gif_url": "",
+           "webp_url": "",
+           "jump_url": "https://www.bilibili.com/h5/mall/digital-card/home?act_id=110412&from=emoji&f_source=garb&-Abrowser=live&hybrid_set_header=2&navhide=1&anchor_task=1&lottery_id=110413",
+           "jump_title": "来了",
+           "package_id": "8970",
+           "id": "125186"
+          },
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         },
+         {
+          "text": "\n已经迫不及待想见到大家啦(⁎⁍̴̛ᴗ⁍̴̛⁎)\n小琳的身体和情绪都已经热起来了！",
+          "orig_text": "\n已经迫不及待想见到大家啦(⁎⁍̴̛ᴗ⁍̴̛⁎)\n小琳的身体和情绪都已经热起来了！",
+          "type": "RICH_TEXT_NODE_TYPE_TEXT",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": null,
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         },
+         {
+          "text": "[2025乃琳的酒馆_应援]",
+          "orig_text": "[2025乃琳的酒馆_应援]",
+          "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": {
+           "type": "3",
+           "size": 2,
+           "text": "[2025乃琳的酒馆_应援]",
+           "icon_url": "https://i0.hdslb.com/bfs/garb/ffe3efa328ff8b44c7670814e4475d7f37542dd1.png",
+           "gif_url": "",
+           "webp_url": "",
+           "jump_url": "https://www.bilibili.com/h5/mall/digital-card/home?act_id=110412&from=emoji&f_source=garb&-Abrowser=live&hybrid_set_header=2&navhide=1&anchor_task=1&lottery_id=110413",
+           "jump_title": "应援",
+           "package_id": "8970",
+           "id": "125185"
+          },
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         },
+         {
+          "text": "\n",
+          "orig_text": "\n",
+          "type": "RICH_TEXT_NODE_TYPE_TEXT",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": null,
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         }
+        ],
+        "paragraphs": [],
+        "has_more": false
+       },
+       "style": 0,
+       "pics": [
+        {
+         "url": "http://i0.hdslb.com/bfs/new_dyn/c78dd7a84d5fe2a295d089e8635c3835672342685.jpg",
+         "width": 3648,
+         "height": 5472,
+         "size": 4391.7529296875,
+         "live_url": "",
+         "aigc": 0,
+         "warning": null
+        },
+        {
+         "url": "http://i0.hdslb.com/bfs/new_dyn/9a5b45d16101865968c9d4d661761973672342685.jpg",
+         "width": 5472,
+         "height": 3648,
+         "size": 4587.587890625,
+         "live_url": "",
+         "aigc": 0,
+         "warning": null
+        },
+        {
+         "url": "http://i0.hdslb.com/bfs/new_dyn/3560a1fd681c092b8f72082fe3b1e5ec672342685.jpg",
+         "width": 5472,
+         "height": 3648,
+         "size": 3865.228515625,
+         "live_url": "",
+         "aigc": 0,
+         "warning": null
+        },
+        {
+         "url": "http://i0.hdslb.com/bfs/new_dyn/ed8e044a3cf971e8cb36453cb4ebb8d2672342685.jpg",
+         "width": 5472,
+         "height": 3648,
+         "size": 2774.9501953125,
+         "live_url": "",
+         "aigc": 0,
+         "warning": null
+        },
+        {
+         "url": "http://i0.hdslb.com/bfs/new_dyn/a40908df20e6daa51d5154edbf168a4f672342685.jpg",
+         "width": 5472,
+         "height": 3648,
+         "size": 2693.1806640625,
+         "live_url": "",
+         "aigc": 0,
+         "warning": null
+        }
+       ],
+       "fold_action": [
+        "展开",
+        "收起"
+       ]
+      }
+     },
+     "additional": null
+    },
+    "module_extend": null,
+    "module_stat": {
+     "forward": {
+      "status": false,
+      "count": 11,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     },
+     "comment": {
+      "status": false,
+      "count": 452,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     },
+     "like": {
+      "status": false,
+      "count": 6915,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     }
+    },
+    "module_interaction": {
+     "items": [
+      {
+       "type": 1,
+       "desc": {
+        "text": "有没有直播或者回放啊[大哭][大哭]",
+        "rich_text_nodes": [
+         {
+          "text": "S1Mon_丶：",
+          "orig_text": "S1Mon_丶：",
+          "type": "RICH_TEXT_NODE_TYPE_AT",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "228092296",
+          "emoji": null,
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         },
+         {
+          "text": "有没有直播或者回放啊",
+          "orig_text": "有没有直播或者回放啊",
+          "type": "RICH_TEXT_NODE_TYPE_TEXT",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": null,
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         },
+         {
+          "text": "[大哭]",
+          "orig_text": "[大哭]",
+          "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": {
+           "type": "1",
+           "size": 1,
+           "text": "[大哭]",
+           "icon_url": "https://i0.hdslb.com/bfs/emote/2caafee2e5db4db72104650d87810cc2c123fc86.png",
+           "gif_url": "",
+           "webp_url": "",
+           "jump_url": "",
+           "jump_title": "",
+           "package_id": "0",
+           "id": "0"
+          },
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         },
+         {
+          "text": "[大哭]",
+          "orig_text": "[大哭]",
+          "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": {
+           "type": "1",
+           "size": 1,
+           "text": "[大哭]",
+           "icon_url": "https://i0.hdslb.com/bfs/emote/2caafee2e5db4db72104650d87810cc2c123fc86.png",
+           "gif_url": "",
+           "webp_url": "",
+           "jump_url": "",
+           "jump_title": "",
+           "package_id": "0",
+           "id": "0"
+          },
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         }
+        ],
+        "paragraphs": [],
+        "has_more": false
+       }
+      }
+     ]
+    },
+    "module_share_info": null,
+    "module_fold": null
+   },
+   "orig": null
+  },
+  {
+   "id_str": "1184672110523449360",
+   "type": "DYNAMIC_TYPE_FORWARD",
+   "basic": {
+    "rid_str": "1184672110523449360",
+    "comment_type": 17,
+    "comment_id_str": "1184672110523449360",
+    "like_icon": {
+     "id": "0",
+     "start_url": "",
+     "action_url": "",
+     "end_url": ""
+    },
+    "in_audit": false,
+    "is_only_fans": false,
+    "editable": false,
+    "open_app_extra": "",
+    "jump_url": "",
+    "aigc": false
+   },
+   "visible": true,
+   "modules": {
+    "module_tag": null,
+    "module_author": {
+     "type": "AUTHOR_TYPE_NORMAL",
+     "avatar": {
+      "container_size": {
+       "width": 1.375,
+       "height": 1.375
+      },
+      "layers": [],
+      "fallback_layers": {
+       "group_id": "",
+       "layers": [
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 2,
+           "axis_x": 0.6875,
+           "axis_y": 0.6875
+          },
+          "size_spec": {
+           "width": 0.787,
+           "height": 0.787
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "AVATAR_LAYER": {
+            "config_type": 0
+           },
+           "GENERAL_CFG": {
+            "config_type": 1,
+            "general_config": {
+             "web_css_style": {
+              "borderRadius": "50%"
+             }
+            }
+           }
+          },
+          "is_critical": true,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 1,
+            "placeholder": 6,
+            "remote": {
+             "url": "https://i1.hdslb.com/bfs/face/83d32ed15b3534267d2c5b1cf1a07a9c1e389fb0.jpg",
+             "bfs_style": "widget-layer-avatar"
+            }
+           }
+          }
+         }
+        },
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 2,
+           "axis_x": 0.6875,
+           "axis_y": 0.6875
+          },
+          "size_spec": {
+           "width": 1.375,
+           "height": 1.375
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "PENDENT_LAYER": {
+            "config_type": 0
+           }
+          },
+          "is_critical": false,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 1,
+            "placeholder": 0,
+            "remote": {
+             "url": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+             "bfs_style": "widget-layer-avatar"
+            }
+           }
+          }
+         }
+        },
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 1,
+           "axis_x": 0.7560000000000001,
+           "axis_y": 0.7726666666666667
+          },
+          "size_spec": {
+           "width": 0.41666666666666663,
+           "height": 0.41666666666666663
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "GENERAL_CFG": {
+            "config_type": 1,
+            "general_config": {
+             "web_css_style": {
+              "background-color": "rgb(255,255,255)",
+              "border": "2px solid rgba(255,255,255,1)",
+              "borderRadius": "50%",
+              "boxSizing": "border-box"
+             }
+            }
+           },
+           "ICON_LAYER": {
+            "config_type": 0
+           }
+          },
+          "is_critical": false,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 2,
+            "placeholder": 0,
+            "local": 3
+           }
+          }
+         }
+        }
+       ],
+       "group_mask": null,
+       "is_critical_group": true
+      },
+      "mid": "672342685"
+     },
+     "face": "https://i1.hdslb.com/bfs/face/83d32ed15b3534267d2c5b1cf1a07a9c1e389fb0.jpg",
+     "face_nft": false,
+     "nft_info": null,
+     "name": "乃琳Queen",
+     "name_render": null,
+     "label": "",
+     "mid": 672342685,
+     "jump_url": "//space.bilibili.com/672342685/dynamic",
+     "following": false,
+     "pub_ts": "1774666370",
+     "pub_time": "3天前",
+     "pub_action": "",
+     "pub_location_text": "",
+     "pendant": {
+      "pid": -1061397063,
+      "name": "2025乃琳的酒馆",
+      "image": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+      "expire": "0",
+      "image_enhance": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+      "image_enhance_frame": "",
+      "n_pid": "1755580227001"
+     },
+     "vip": {
+      "type": 2,
+      "status": 1,
+      "due_date": "1776009600000",
+      "vip_pay_type": 0,
+      "theme_type": 0,
+      "label": {
+       "path": "http://i0.hdslb.com/bfs/vip/label_annual.png",
+       "text": "年度大会员",
+       "label_theme": "annual_vip",
+       "text_color": "#FFFFFF",
+       "bg_style": 1,
+       "bg_color": "#FB7299",
+       "border_color": "",
+       "use_img_label": true,
+       "img_label_uri_hans": "",
+       "img_label_uri_hant": "",
+       "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d4f8bfc713826a5412a0a27eaaac4d6b9ede1d9.png",
+       "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/VEW8fCC0hg.png"
+      },
+      "avatar_subscript": 1,
+      "nickname_color": "#FB7299",
+      "role": "3",
+      "avatar_subscript_url": "",
+      "tv_vip_status": 0,
+      "tv_vip_pay_type": 0,
+      "tv_due_date": "0",
+      "avatar_icon": {
+       "icon_type": 1,
+       "icon_resource": {
+        "type": 0,
+        "url": ""
+       }
+      }
+     },
+     "official_verify": {
+      "type": 0,
+      "desc": ""
+     },
+     "decorate": null,
+     "decoration_card": {
+      "id": "1692344457001",
+      "item_id": "1692344457001",
+      "name": " 脑洞波系列主题装扮-乃琳粉丝",
+      "card_url": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "big_card_url": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "card_type": "2",
+      "expire_time": "0",
+      "card_type_name": "免费",
+      "jump_url": "https://www.bilibili.com/h5/mall/equity-link/collect-home?item_id=1692344457001&isdiy=0&part=card&from=post&f_source=garb&vmid=672342685&native.theme=1&navhide=1",
+      "fan": {
+       "is_fan": "1",
+       "number": "1",
+       "color": "#596890",
+       "name": "脑洞波系列主题装扮-乃琳",
+       "num_desc": "000001",
+       "num_prefix": "",
+       "color_format": {
+        "start_point": "0,0",
+        "end_point": "0,100",
+        "colors": [
+         "#596890FF",
+         "#596890FF"
+        ],
+        "gradients": [
+         "0",
+         "100"
+        ]
+       }
+      },
+      "image_enhance": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "image_group": null
+     },
+     "is_top": false,
+     "icon_badge": null
+    },
+    "module_more": {
+     "rcmd_text": "",
+     "three_point_items": [
+      {
+       "label": "举报",
+       "type": "THREE_POINT_REPORT",
+       "params": {},
+       "modal": null,
+       "jump_url": ""
+      }
+     ]
+    },
+    "module_dispute": null,
+    "module_dynamic": {
+     "topic": null,
+     "desc": {
+      "text": "防止大家等太久，又刻了一套一样的( ̀⌄ ́)希望大家今天玩儿得开心[2025乃琳的酒馆_Oi]",
+      "rich_text_nodes": [
+       {
+        "text": "防止大家等太久，又刻了一套一样的( ̀⌄ ́)希望大家今天玩儿得开心",
+        "orig_text": "防止大家等太久，又刻了一套一样的( ̀⌄ ́)希望大家今天玩儿得开心",
+        "type": "RICH_TEXT_NODE_TYPE_TEXT",
+        "jump_url": "",
+        "icon_url": "",
+        "icon_name": "",
+        "rid": "",
+        "emoji": null,
+        "goods": null,
+        "style": null,
+        "pics": [],
+        "video": null
+       },
+       {
+        "text": "[2025乃琳的酒馆_Oi]",
+        "orig_text": "[2025乃琳的酒馆_Oi]",
+        "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+        "jump_url": "",
+        "icon_url": "",
+        "icon_name": "",
+        "rid": "",
+        "emoji": {
+         "type": "3",
+         "size": 2,
+         "text": "[2025乃琳的酒馆_Oi]",
+         "icon_url": "https://i0.hdslb.com/bfs/garb/5545be8e39f2bbdecf8a86d1c6ba6e31e97d0e9e.png",
+         "gif_url": "",
+         "webp_url": "",
+         "jump_url": "https://www.bilibili.com/h5/mall/digital-card/home?act_id=110412&from=emoji&f_source=garb&-Abrowser=live&hybrid_set_header=2&navhide=1&anchor_task=1&lottery_id=110413",
+         "jump_title": "Oi",
+         "package_id": "8970",
+         "id": "125194"
+        },
+        "goods": null,
+        "style": null,
+        "pics": [],
+        "video": null
+       }
+      ],
+      "paragraphs": [],
+      "has_more": false
+     },
+     "major": null,
+     "additional": null
+    },
+    "module_extend": null,
+    "module_stat": {
+     "forward": {
+      "status": false,
+      "count": 5,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     },
+     "comment": {
+      "status": false,
+      "count": 371,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     },
+     "like": {
+      "status": false,
+      "count": 3972,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     }
+    },
+    "module_interaction": null,
+    "module_share_info": null,
+    "module_fold": null
+   },
+   "orig": {
+    "id_str": "1179176575307874324",
+    "type": "DYNAMIC_TYPE_DRAW",
+    "basic": {
+     "rid_str": "",
+     "comment_type": 0,
+     "comment_id_str": "",
+     "like_icon": null,
+     "in_audit": false,
+     "is_only_fans": false,
+     "editable": false,
+     "open_app_extra": "",
+     "jump_url": "//www.bilibili.com/opus/1179176575307874324",
+     "aigc": false
+    },
+    "visible": true,
+    "modules": {
+     "module_tag": null,
+     "module_author": {
+      "type": "AUTHOR_TYPE_NORMAL",
+      "avatar": {
+       "container_size": {
+        "width": 1.375,
+        "height": 1.375
+       },
+       "layers": [],
+       "fallback_layers": {
+        "group_id": "",
+        "layers": [
+         {
+          "layer_id": "",
+          "visible": true,
+          "general_spec": {
+           "pos_spec": {
+            "coordinate_pos": 2,
+            "axis_x": 0.6875,
+            "axis_y": 0.6875
+           },
+           "size_spec": {
+            "width": 0.787,
+            "height": 0.787
+           },
+           "render_spec": {
+            "opacity": 1
+           }
+          },
+          "layer_config": {
+           "tags": {
+            "AVATAR_LAYER": {
+             "config_type": 0
+            },
+            "GENERAL_CFG": {
+             "config_type": 1,
+             "general_config": {
+              "web_css_style": {
+               "borderRadius": "50%"
+              }
+             }
+            }
+           },
+           "is_critical": true,
+           "allow_over_paint": false,
+           "layer_mask": null
+          },
+          "resource": {
+           "res_type": 3,
+           "res_image": {
+            "image_src": {
+             "src_type": 1,
+             "placeholder": 6,
+             "remote": {
+              "url": "https://i1.hdslb.com/bfs/face/83d32ed15b3534267d2c5b1cf1a07a9c1e389fb0.jpg",
+              "bfs_style": "widget-layer-avatar"
+             }
+            }
+           }
+          }
+         },
+         {
+          "layer_id": "",
+          "visible": true,
+          "general_spec": {
+           "pos_spec": {
+            "coordinate_pos": 2,
+            "axis_x": 0.6875,
+            "axis_y": 0.6875
+           },
+           "size_spec": {
+            "width": 1.375,
+            "height": 1.375
+           },
+           "render_spec": {
+            "opacity": 1
+           }
+          },
+          "layer_config": {
+           "tags": {
+            "PENDENT_LAYER": {
+             "config_type": 0
+            }
+           },
+           "is_critical": false,
+           "allow_over_paint": false,
+           "layer_mask": null
+          },
+          "resource": {
+           "res_type": 3,
+           "res_image": {
+            "image_src": {
+             "src_type": 1,
+             "placeholder": 0,
+             "remote": {
+              "url": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+              "bfs_style": "widget-layer-avatar"
+             }
+            }
+           }
+          }
+         },
+         {
+          "layer_id": "",
+          "visible": true,
+          "general_spec": {
+           "pos_spec": {
+            "coordinate_pos": 1,
+            "axis_x": 0.7560000000000001,
+            "axis_y": 0.7726666666666667
+           },
+           "size_spec": {
+            "width": 0.41666666666666663,
+            "height": 0.41666666666666663
+           },
+           "render_spec": {
+            "opacity": 1
+           }
+          },
+          "layer_config": {
+           "tags": {
+            "GENERAL_CFG": {
+             "config_type": 1,
+             "general_config": {
+              "web_css_style": {
+               "background-color": "rgb(255,255,255)",
+               "border": "2px solid rgba(255,255,255,1)",
+               "borderRadius": "50%",
+               "boxSizing": "border-box"
+              }
+             }
+            },
+            "ICON_LAYER": {
+             "config_type": 0
+            }
+           },
+           "is_critical": false,
+           "allow_over_paint": false,
+           "layer_mask": null
+          },
+          "resource": {
+           "res_type": 3,
+           "res_image": {
+            "image_src": {
+             "src_type": 2,
+             "placeholder": 0,
+             "local": 3
+            }
+           }
+          }
+         }
+        ],
+        "group_mask": null,
+        "is_critical_group": true
+       },
+       "mid": "672342685"
+      },
+      "face": "https://i1.hdslb.com/bfs/face/83d32ed15b3534267d2c5b1cf1a07a9c1e389fb0.jpg",
+      "face_nft": false,
+      "nft_info": null,
+      "name": "乃琳Queen",
+      "name_render": null,
+      "label": "",
+      "mid": 672342685,
+      "jump_url": "//space.bilibili.com/672342685/dynamic",
+      "following": false,
+      "pub_ts": "1773386841",
+      "pub_time": "",
+      "pub_action": "",
+      "pub_location_text": "",
+      "pendant": {
+       "pid": -1061397063,
+       "name": "2025乃琳的酒馆",
+       "image": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+       "expire": "0",
+       "image_enhance": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+       "image_enhance_frame": "",
+       "n_pid": "1755580227001"
+      },
+      "vip": {
+       "type": 2,
+       "status": 1,
+       "due_date": "1776009600000",
+       "vip_pay_type": 0,
+       "theme_type": 0,
+       "label": {
+        "path": "http://i0.hdslb.com/bfs/vip/label_annual.png",
+        "text": "年度大会员",
+        "label_theme": "annual_vip",
+        "text_color": "#FFFFFF",
+        "bg_style": 1,
+        "bg_color": "#FB7299",
+        "border_color": "",
+        "use_img_label": true,
+        "img_label_uri_hans": "",
+        "img_label_uri_hant": "",
+        "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d4f8bfc713826a5412a0a27eaaac4d6b9ede1d9.png",
+        "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/VEW8fCC0hg.png"
+       },
+       "avatar_subscript": 1,
+       "nickname_color": "#FB7299",
+       "role": "3",
+       "avatar_subscript_url": "",
+       "tv_vip_status": 0,
+       "tv_vip_pay_type": 0,
+       "tv_due_date": "0",
+       "avatar_icon": {
+        "icon_type": 1,
+        "icon_resource": {
+         "type": 0,
+         "url": ""
+        }
+       }
+      },
+      "official_verify": {
+       "type": 0,
+       "desc": ""
+      },
+      "decorate": null,
+      "decoration_card": {
+       "id": "1692344457001",
+       "item_id": "1692344457001",
+       "name": " 脑洞波系列主题装扮-乃琳粉丝",
+       "card_url": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+       "big_card_url": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+       "card_type": "2",
+       "expire_time": "0",
+       "card_type_name": "免费",
+       "jump_url": "https://www.bilibili.com/h5/mall/equity-link/collect-home?item_id=1692344457001&isdiy=0&part=card&from=post&f_source=garb&vmid=672342685&native.theme=1&navhide=1",
+       "fan": {
+        "is_fan": "1",
+        "number": "1",
+        "color": "#596890",
+        "name": "脑洞波系列主题装扮-乃琳",
+        "num_desc": "000001",
+        "num_prefix": "",
+        "color_format": {
+         "start_point": "0,0",
+         "end_point": "0,100",
+         "colors": [
+          "#596890FF",
+          "#596890FF"
+         ],
+         "gradients": [
+          "0",
+          "100"
+         ]
+        }
+       },
+       "image_enhance": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+       "image_group": null
+      },
+      "is_top": false,
+      "icon_badge": null
+     },
+     "module_more": null,
+     "module_dispute": null,
+     "module_dynamic": {
+      "topic": {
+       "id": "9825",
+       "name": "乃琳夸夸群",
+       "jump_url": "https://m.bilibili.com/topic-detail?topic_id=9825&topic_name=%E4%B9%83%E7%90%B3%E5%A4%B8%E5%A4%B8%E7%BE%A4"
+      },
+      "desc": null,
+      "major": {
+       "type": "MAJOR_TYPE_OPUS",
+       "none": null,
+       "blocked": null,
+       "archive": null,
+       "pgc": null,
+       "courses": null,
+       "draw": null,
+       "article": null,
+       "music": null,
+       "common": null,
+       "upower_common": null,
+       "live": null,
+       "live_rcmd": null,
+       "medialist": null,
+       "subscription": null,
+       "ugc_season": null,
+       "subscription_new": null,
+       "opus": {
+        "jump_url": "//www.bilibili.com/opus/1179176575307874324",
+        "title": "",
+        "summary": {
+         "text": "奶淇琳！！之前说的橡皮章大家还记得嘛[2025乃琳的酒馆_Oi]\n嘿嘿嘿用上了[2025乃琳的酒馆_应援]\n3.28小琳个人线下当天，大家可以去官周售卖处自行盖章噢～ [2025乃琳的酒馆_来了]\n希望大家喜欢[2025乃琳的酒馆_拜托]\n",
+         "rich_text_nodes": [
+          {
+           "text": "奶淇琳！！之前说的橡皮章大家还记得嘛",
+           "orig_text": "奶淇琳！！之前说的橡皮章大家还记得嘛",
+           "type": "RICH_TEXT_NODE_TYPE_TEXT",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": null,
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          },
+          {
+           "text": "[2025乃琳的酒馆_Oi]",
+           "orig_text": "[2025乃琳的酒馆_Oi]",
+           "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": {
+            "type": "3",
+            "size": 2,
+            "text": "[2025乃琳的酒馆_Oi]",
+            "icon_url": "https://i0.hdslb.com/bfs/garb/5545be8e39f2bbdecf8a86d1c6ba6e31e97d0e9e.png",
+            "gif_url": "",
+            "webp_url": "",
+            "jump_url": "https://www.bilibili.com/h5/mall/digital-card/home?act_id=110412&from=emoji&f_source=garb&-Abrowser=live&hybrid_set_header=2&navhide=1&anchor_task=1&lottery_id=110413",
+            "jump_title": "Oi",
+            "package_id": "8970",
+            "id": "125194"
+           },
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          },
+          {
+           "text": "\n嘿嘿嘿用上了",
+           "orig_text": "\n嘿嘿嘿用上了",
+           "type": "RICH_TEXT_NODE_TYPE_TEXT",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": null,
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          },
+          {
+           "text": "[2025乃琳的酒馆_应援]",
+           "orig_text": "[2025乃琳的酒馆_应援]",
+           "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": {
+            "type": "3",
+            "size": 2,
+            "text": "[2025乃琳的酒馆_应援]",
+            "icon_url": "https://i0.hdslb.com/bfs/garb/ffe3efa328ff8b44c7670814e4475d7f37542dd1.png",
+            "gif_url": "",
+            "webp_url": "",
+            "jump_url": "https://www.bilibili.com/h5/mall/digital-card/home?act_id=110412&from=emoji&f_source=garb&-Abrowser=live&hybrid_set_header=2&navhide=1&anchor_task=1&lottery_id=110413",
+            "jump_title": "应援",
+            "package_id": "8970",
+            "id": "125185"
+           },
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          },
+          {
+           "text": "\n3.28小琳个人线下当天，大家可以去官周售卖处自行盖章噢～ ",
+           "orig_text": "\n3.28小琳个人线下当天，大家可以去官周售卖处自行盖章噢～ ",
+           "type": "RICH_TEXT_NODE_TYPE_TEXT",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": null,
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          },
+          {
+           "text": "[2025乃琳的酒馆_来了]",
+           "orig_text": "[2025乃琳的酒馆_来了]",
+           "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": {
+            "type": "3",
+            "size": 2,
+            "text": "[2025乃琳的酒馆_来了]",
+            "icon_url": "https://i0.hdslb.com/bfs/garb/b113a0cfdee39f61578dccdd6327e0c19830ef84.png",
+            "gif_url": "",
+            "webp_url": "",
+            "jump_url": "https://www.bilibili.com/h5/mall/digital-card/home?act_id=110412&from=emoji&f_source=garb&-Abrowser=live&hybrid_set_header=2&navhide=1&anchor_task=1&lottery_id=110413",
+            "jump_title": "来了",
+            "package_id": "8970",
+            "id": "125186"
+           },
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          },
+          {
+           "text": "\n希望大家喜欢",
+           "orig_text": "\n希望大家喜欢",
+           "type": "RICH_TEXT_NODE_TYPE_TEXT",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": null,
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          },
+          {
+           "text": "[2025乃琳的酒馆_拜托]",
+           "orig_text": "[2025乃琳的酒馆_拜托]",
+           "type": "RICH_TEXT_NODE_TYPE_EMOJI",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": {
+            "type": "3",
+            "size": 2,
+            "text": "[2025乃琳的酒馆_拜托]",
+            "icon_url": "https://i0.hdslb.com/bfs/garb/908b34a98f668332f6d5c7701e61f08059b446d2.png",
+            "gif_url": "",
+            "webp_url": "",
+            "jump_url": "https://www.bilibili.com/h5/mall/digital-card/home?act_id=110412&from=emoji&f_source=garb&-Abrowser=live&hybrid_set_header=2&navhide=1&anchor_task=1&lottery_id=110413",
+            "jump_title": "拜托",
+            "package_id": "8970",
+            "id": "125188"
+           },
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          },
+          {
+           "text": "\n",
+           "orig_text": "\n",
+           "type": "RICH_TEXT_NODE_TYPE_TEXT",
+           "jump_url": "",
+           "icon_url": "",
+           "icon_name": "",
+           "rid": "",
+           "emoji": null,
+           "goods": null,
+           "style": null,
+           "pics": [],
+           "video": null
+          }
+         ],
+         "paragraphs": [],
+         "has_more": false
+        },
+        "style": 0,
+        "pics": [
+         {
+          "url": "http://i0.hdslb.com/bfs/new_dyn/69d011de3a74d350b50b1ca237d32f76672342685.jpg",
+          "width": 1081,
+          "height": 1079,
+          "size": 121.525390625,
+          "live_url": "",
+          "aigc": 0,
+          "warning": null
+         }
+        ],
+        "fold_action": [
+         "展开",
+         "收起"
+        ]
+       }
+      },
+      "additional": null
+     },
+     "module_extend": null,
+     "module_stat": null,
+     "module_interaction": null,
+     "module_share_info": null,
+     "module_fold": null
+    },
+    "orig": null
+   }
+  },
+  {
+   "id_str": "1184302893660897313",
+   "type": "DYNAMIC_TYPE_AV",
+   "basic": {
+    "rid_str": "116295483789501",
+    "comment_type": 1,
+    "comment_id_str": "116295483789501",
+    "like_icon": {
+     "id": "0",
+     "start_url": "",
+     "action_url": "",
+     "end_url": ""
+    },
+    "in_audit": false,
+    "is_only_fans": false,
+    "editable": false,
+    "open_app_extra": "",
+    "jump_url": "",
+    "aigc": false
+   },
+   "visible": true,
+   "modules": {
+    "module_tag": null,
+    "module_author": {
+     "type": "AUTHOR_TYPE_NORMAL",
+     "avatar": {
+      "container_size": {
+       "width": 1.375,
+       "height": 1.375
+      },
+      "layers": [],
+      "fallback_layers": {
+       "group_id": "",
+       "layers": [
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 2,
+           "axis_x": 0.6875,
+           "axis_y": 0.6875
+          },
+          "size_spec": {
+           "width": 0.787,
+           "height": 0.787
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "AVATAR_LAYER": {
+            "config_type": 0
+           },
+           "GENERAL_CFG": {
+            "config_type": 1,
+            "general_config": {
+             "web_css_style": {
+              "borderRadius": "50%"
+             }
+            }
+           }
+          },
+          "is_critical": true,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 1,
+            "placeholder": 6,
+            "remote": {
+             "url": "https://i1.hdslb.com/bfs/face/83d32ed15b3534267d2c5b1cf1a07a9c1e389fb0.jpg",
+             "bfs_style": "widget-layer-avatar"
+            }
+           }
+          }
+         }
+        },
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 2,
+           "axis_x": 0.6875,
+           "axis_y": 0.6875
+          },
+          "size_spec": {
+           "width": 1.375,
+           "height": 1.375
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "PENDENT_LAYER": {
+            "config_type": 0
+           }
+          },
+          "is_critical": false,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 1,
+            "placeholder": 0,
+            "remote": {
+             "url": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+             "bfs_style": "widget-layer-avatar"
+            }
+           }
+          }
+         }
+        },
+        {
+         "layer_id": "",
+         "visible": true,
+         "general_spec": {
+          "pos_spec": {
+           "coordinate_pos": 1,
+           "axis_x": 0.7560000000000001,
+           "axis_y": 0.7726666666666667
+          },
+          "size_spec": {
+           "width": 0.41666666666666663,
+           "height": 0.41666666666666663
+          },
+          "render_spec": {
+           "opacity": 1
+          }
+         },
+         "layer_config": {
+          "tags": {
+           "GENERAL_CFG": {
+            "config_type": 1,
+            "general_config": {
+             "web_css_style": {
+              "background-color": "rgb(255,255,255)",
+              "border": "2px solid rgba(255,255,255,1)",
+              "borderRadius": "50%",
+              "boxSizing": "border-box"
+             }
+            }
+           },
+           "ICON_LAYER": {
+            "config_type": 0
+           }
+          },
+          "is_critical": false,
+          "allow_over_paint": false,
+          "layer_mask": null
+         },
+         "resource": {
+          "res_type": 3,
+          "res_image": {
+           "image_src": {
+            "src_type": 2,
+            "placeholder": 0,
+            "local": 3
+           }
+          }
+         }
+        }
+       ],
+       "group_mask": null,
+       "is_critical_group": true
+      },
+      "mid": "672342685"
+     },
+     "face": "https://i1.hdslb.com/bfs/face/83d32ed15b3534267d2c5b1cf1a07a9c1e389fb0.jpg",
+     "face_nft": false,
+     "nft_info": null,
+     "name": "乃琳Queen",
+     "name_render": null,
+     "label": "",
+     "mid": 672342685,
+     "jump_url": "//space.bilibili.com/672342685/dynamic",
+     "following": false,
+     "pub_ts": "1774580405",
+     "pub_time": "03月27日",
+     "pub_action": "与他人联合创作",
+     "pub_location_text": "",
+     "pendant": {
+      "pid": -1061397063,
+      "name": "2025乃琳的酒馆",
+      "image": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+      "expire": "0",
+      "image_enhance": "https://i1.hdslb.com/bfs/garb/open/9bec60269634daa43d662b1b9e78566750d5233a.png",
+      "image_enhance_frame": "",
+      "n_pid": "1755580227001"
+     },
+     "vip": {
+      "type": 2,
+      "status": 1,
+      "due_date": "1776009600000",
+      "vip_pay_type": 0,
+      "theme_type": 0,
+      "label": {
+       "path": "http://i0.hdslb.com/bfs/vip/label_annual.png",
+       "text": "年度大会员",
+       "label_theme": "annual_vip",
+       "text_color": "#FFFFFF",
+       "bg_style": 1,
+       "bg_color": "#FB7299",
+       "border_color": "",
+       "use_img_label": true,
+       "img_label_uri_hans": "",
+       "img_label_uri_hant": "",
+       "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d4f8bfc713826a5412a0a27eaaac4d6b9ede1d9.png",
+       "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/VEW8fCC0hg.png"
+      },
+      "avatar_subscript": 1,
+      "nickname_color": "#FB7299",
+      "role": "3",
+      "avatar_subscript_url": "",
+      "tv_vip_status": 0,
+      "tv_vip_pay_type": 0,
+      "tv_due_date": "0",
+      "avatar_icon": {
+       "icon_type": 1,
+       "icon_resource": {
+        "type": 0,
+        "url": ""
+       }
+      }
+     },
+     "official_verify": {
+      "type": 0,
+      "desc": ""
+     },
+     "decorate": null,
+     "decoration_card": {
+      "id": "1692344457001",
+      "item_id": "1692344457001",
+      "name": " 脑洞波系列主题装扮-乃琳粉丝",
+      "card_url": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "big_card_url": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "card_type": "2",
+      "expire_time": "0",
+      "card_type_name": "免费",
+      "jump_url": "https://www.bilibili.com/h5/mall/equity-link/collect-home?item_id=1692344457001&isdiy=0&part=card&from=post&f_source=garb&vmid=672342685&native.theme=1&navhide=1",
+      "fan": {
+       "is_fan": "1",
+       "number": "1",
+       "color": "#596890",
+       "name": "脑洞波系列主题装扮-乃琳",
+       "num_desc": "000001",
+       "num_prefix": "",
+       "color_format": {
+        "start_point": "0,0",
+        "end_point": "0,100",
+        "colors": [
+         "#596890FF",
+         "#596890FF"
+        ],
+        "gradients": [
+         "0",
+         "100"
+        ]
+       }
+      },
+      "image_enhance": "https://i0.hdslb.com/bfs/garb/489191a5f3932cda89f7574dfa4e0de62cbe06d7.png",
+      "image_group": null
+     },
+     "is_top": false,
+     "icon_badge": null
+    },
+    "module_more": {
+     "rcmd_text": "",
+     "three_point_items": [
+      {
+       "label": "举报",
+       "type": "THREE_POINT_REPORT",
+       "params": {},
+       "modal": null,
+       "jump_url": ""
+      }
+     ]
+    },
+    "module_dispute": null,
+    "module_dynamic": {
+     "topic": null,
+     "desc": null,
+     "major": {
+      "type": "MAJOR_TYPE_ARCHIVE",
+      "none": null,
+      "blocked": null,
+      "archive": {
+       "type": 1,
+       "bvid": "BV1SdXWB2Enp",
+       "aid": "116295483789501",
+       "cover": "http://i2.hdslb.com/bfs/archive/e6bbf1f38f308c017a0b93b5d22ea8f273968316.jpg",
+       "jump_url": "//www.bilibili.com/video/BV1SdXWB2Enp",
+       "stat": {
+        "danmaku": "2449",
+        "play": "47.4万",
+        "vt": ""
+       },
+       "duration_text": "00:33",
+       "title": "【翻跳】┌|∵|┘ ┌|∵|┘ ┌|∵|┘丨《L!!!!ght》",
+       "desc": "神秘的舞蹈仪式\n┌|∵|┘ ┌|∵|┘ ┌|∵|┘\n——————————\n本家：BV1uLwSzVEcH\n表演：贝拉＆嘉然＆乃琳\n场景：枝江世界（自研）\n动作：动作捕捉",
+       "badge": {
+        "icon_url": "",
+        "text": "合作视频",
+        "bg_color": "#FB7299",
+        "color": "#FFFFFF"
+       },
+       "enable_vt": 0,
+       "disable_preview": 0,
+       "premiere_online": "",
+       "stat_hidden": 0
+      },
+      "pgc": null,
+      "courses": null,
+      "draw": null,
+      "article": null,
+      "music": null,
+      "common": null,
+      "upower_common": null,
+      "live": null,
+      "live_rcmd": null,
+      "medialist": null,
+      "subscription": null,
+      "ugc_season": null,
+      "subscription_new": null,
+      "opus": null
+     },
+     "additional": null
+    },
+    "module_extend": null,
+    "module_stat": {
+     "forward": {
+      "status": false,
+      "count": 202,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     },
+     "comment": {
+      "status": false,
+      "count": 5037,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     },
+     "like": {
+      "status": false,
+      "count": 59074,
+      "forbidden": false,
+      "disabled": false,
+      "silent": false,
+      "hidden": false
+     }
+    },
+    "module_interaction": {
+     "items": [
+      {
+       "type": 1,
+       "desc": {
+        "text": "┌|∵|┘ ┌|∵|┘ ┌|∵|┘",
+        "rich_text_nodes": [
+         {
+          "text": "嘉然今天吃什么：",
+          "orig_text": "嘉然今天吃什么：",
+          "type": "RICH_TEXT_NODE_TYPE_AT",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "672328094",
+          "emoji": null,
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         },
+         {
+          "text": "┌|∵|┘ ┌|∵|┘ ┌|∵|┘",
+          "orig_text": "┌|∵|┘ ┌|∵|┘ ┌|∵|┘",
+          "type": "RICH_TEXT_NODE_TYPE_TEXT",
+          "jump_url": "",
+          "icon_url": "",
+          "icon_name": "",
+          "rid": "",
+          "emoji": null,
+          "goods": null,
+          "style": null,
+          "pics": [],
+          "video": null
+         }
+        ],
+        "paragraphs": [],
+        "has_more": false
+       }
+      }
+     ]
+    },
+    "module_share_info": null,
+    "module_fold": null
+   },
+   "orig": null
+  }
+ ]
+}

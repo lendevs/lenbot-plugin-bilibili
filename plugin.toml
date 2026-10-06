@@ -8,7 +8,8 @@ reload = "plugin"
 authors = ["LEN5010"]
 license = "AGPL-3.0-or-later"
 repository = "https://github.com/lendevs/lenbot-plugin-bilibili"
-description = "哔哩哔哩合集：公开视频/分P/WBI搜索/评论，主人明确授权的字幕、动态和固定点赞收藏动作；每30秒观察订阅直播间，开播/下播变化进入场景事件。"
+description = "哔哩哔哩合集：公开视频/分P/WBI搜索/评论，主人明确授权的字幕、动态和固定点赞收藏动作；每30秒观察订阅直播间，开播推送卡片，开播/下播变化进入场景事件；关注UP主的新动态、新视频和本人评论推送卡片。"
+dependencies = ["bilibili-api-python==17.4.1"]
 
 [config.rooms]
 label = "直播监测的直播间"
@@ -38,6 +39,71 @@ type = "scene_list"
 label = "提醒的群"
 description = "开播状态变化时通知这些群"
 default = []
+
+[config.rooms.fields.at_all]
+type = "boolean"
+label = "开播时 @全体成员"
+description = "需要机器人是管理员且群里还有 @全体 次数；发送失败会去掉 @全体 再发一次"
+default = false
+
+[config.follows]
+label = "关注的 UP 主"
+type = "object_list"
+default = []
+description = "新动态、新视频和 UP 主本人的评论以卡片推送到这些群。需要填写 SESSDATA。"
+
+[config.follows.fields.uid]
+type = "integer"
+label = "UP 主 UID"
+description = "B 站账号 UID"
+minimum = 1
+
+[config.follows.fields.name]
+type = "string"
+label = "备注名"
+description = "只用于面板和查询，卡片显示 B 站上的实际昵称"
+default = ""
+
+[config.follows.fields.scenes]
+type = "scene_list"
+label = "推送的群"
+description = "只有同时启用了本插件的群会收到"
+default = []
+
+[config.follows.fields.dynamic]
+type = "boolean"
+label = "推送动态"
+description = "图文、文字和转发动态"
+default = true
+
+[config.follows.fields.video]
+type = "boolean"
+label = "推送视频"
+description = "新投稿视频"
+default = true
+
+[config.follows.fields.comment]
+type = "boolean"
+label = "推送评论"
+description = "UP 主本人在自己最近的动态和视频下发表或回复的评论"
+default = false
+
+[config.push_poll_seconds]
+label = "动态轮询间隔（秒）"
+group = "关注推送"
+type = "integer"
+default = 300
+minimum = 60
+description = "每个 UP 主两次读取动态之间的间隔；多个 UP 主之间另外错开 20 秒。"
+
+[config.comment_request_seconds]
+label = "评论请求间隔（秒）"
+group = "关注推送"
+type = "number"
+default = 2
+minimum = 0.5
+maximum = 60
+description = "评论接口两次请求之间的最短间隔，所有 UP 主共用。"
 
 [config.live_api_url]
 label = "直播状态接口"

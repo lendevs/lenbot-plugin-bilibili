@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from len_bot.next.plugin import Image, Mention
 from len_bot.next.plugin_testing import PluginTest
 
 PACKAGE = Path(__file__).parents[1]
@@ -54,8 +55,24 @@ async def test_session_start_and_end_become_scene_events(source):
         await plugin.instance.poll(plugin.context)
         texts = [event["content"] for event in sorted(bot.events(), key=lambda event: event["id"])]
         assert len(texts) == 2
-        assert "新直播场次" in texts[0] and "嘉然" in texts[0]
+        assert "新直播场次" in texts[0] and "嘉然" in texts[0] and "已向本群发出开播通知" in texts[0]
         assert "已结束" in texts[1] and "轮播中" in texts[1]
+        # Only the new session sends a card; @全体 is off unless the room asks for it.
+        assert len(bot.deliveries) == 1
+        headline, card, url = bot.deliveries[0].parts
+        assert headline.text == "嘉然 开播了" and isinstance(card, Image) and url.text.endswith("/22637261")
+
+
+@pytest.mark.asyncio
+async def test_room_can_mention_everyone_on_new_session(source):
+    source.json("/room", room(0))
+    rooms = [{**config(source)["rooms"][0], "at_all": True}]
+    async with PluginTest(PACKAGE, config={**config(source), "rooms": rooms}) as bot:
+        await first_poll(bot)
+        plugin = bot.host.plugins["bilibili"]
+        source.json("/room", room(1, "2026-10-05 20:00:00"))
+        await plugin.instance.poll(plugin.context)
+        assert bot.deliveries[0].parts[0] == Mention("all")
 
 
 @pytest.mark.asyncio

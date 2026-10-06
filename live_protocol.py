@@ -16,6 +16,7 @@ class Subscription(BaseModel):
     room_id: Positive
     name: str = Field(min_length=1)
     scenes: list[Scene] = Field(min_length=1)
+    at_all: bool = False
 
     @field_validator('scenes')
     @classmethod
@@ -44,6 +45,8 @@ class Room(BaseModel):
     live_time: str
     user_cover: str
     keyframe: str
+    area_name: str = ''
+    parent_area_name: str = ''
 
 
 class Envelope(BaseModel):

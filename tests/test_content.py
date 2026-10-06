@@ -11,13 +11,7 @@ PACKAGE = Path(__file__).parents[1]
 
 def test_wbi_signature_matches_documented_example():
     # Example from SocialSisterYi/bilibili-API-collect docs/misc/sign/wbi.md.
-    import importlib.util, sys
-    spec = importlib.util.spec_from_file_location("bilibili_pkg", PACKAGE / "__init__.py",
-                                                  submodule_search_locations=[str(PACKAGE)])
-    package = importlib.util.module_from_spec(spec)
-    sys.modules["bilibili_pkg"] = package
-    spec.loader.exec_module(package)
-    from bilibili_pkg.client import sign
+    from bilibili_plugin.client import sign
     signed = sign({"foo": "114", "bar": "514", "zab": 1919810},
                   "https://i0.hdslb.com/bfs/wbi/7cd084941338484aae1ad9425b84077c.png",
                   "https://i0.hdslb.com/bfs/wbi/4932caff0ff746eab6f01bf08b70ac45.png", 1702204169)
