@@ -17,7 +17,7 @@ import httpx
 from PIL import Image as Picture, ImageOps
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
 
-from len_bot.next.plugin import Image, Invocation, Mention, PluginContext, Sent, Text, tool
+from len_bot.plugin import Image, Invocation, Mention, PluginContext, Sent, Text, tool
 from .card_kit import Fonts, Run
 from .comment_capture import CommentCaptureCoordinator, CommentCaptureError, CommentRetryPolicy, CommentWorkScheduler
 from .comment_journal import CommentJournal

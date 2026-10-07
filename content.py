@@ -4,7 +4,7 @@ import re
 from typing import Annotated, Literal
 from pydantic import Field
 
-from len_bot.next.plugin import PluginContext, Invocation, tool
+from len_bot.plugin import PluginContext, Invocation, tool
 from .requests import VideoRequest, AccountReadRequest, AccountWriteRequest
 from .account import Account
 from .client import Client

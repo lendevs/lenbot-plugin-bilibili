@@ -9,8 +9,8 @@ import time
 
 import pytest
 
-from len_bot.next.plugin import Image, Mention, Text
-from len_bot.next.plugin_testing import PluginTest
+from len_bot.plugin import Image, Mention, Text
+from len_bot.plugin_testing import PluginTest
 
 PACKAGE = Path(__file__).parents[1]
 SCENE = "onebot:group:80001"
@@ -129,7 +129,7 @@ async def test_failed_at_all_is_sent_again_without_it(source, sdk):
         async def send_parts(plugin, scene, parts, reply_to):
             attempts.append(parts)
             if any(isinstance(part, Mention) for part in parts):
-                from len_bot.next.plugin import Sent
+                from len_bot.plugin import Sent
                 return Sent("failed", "群里不允许 @全体")
             return await original(plugin, scene, parts, reply_to)
 

@@ -3,7 +3,7 @@ cards for followed uploaders' dynamics, videos and comments."""
 
 from typing import Annotated
 from pydantic import Field
-from len_bot.next.plugin import Invocation, Plugin, PluginContext, tool
+from len_bot.plugin import Invocation, Plugin, PluginContext, tool
 from .requests import MonitorRequest
 
 from .content import ContentFeature
