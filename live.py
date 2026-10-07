@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
-from len_bot.next.plugin import Image, Invocation, PluginContext, Text, background, tool
+from len_bot.plugin import Image, Invocation, PluginContext, Text, background, tool
 from .live_protocol import Sample, Subscription, parse_room, subscriptions
 from .push_card import Post, render_post
 
