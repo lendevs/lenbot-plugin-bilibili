@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import json
 import time
 from copy import deepcopy
@@ -41,8 +40,6 @@ KV_BILIBILI_MONITOR_STATE = "bilibili_monitor_state"
 KV_BILIBILI_GROUP_ORIGINS = "bilibili_group_origins"
 KV_BILIBILI_CREDENTIAL = "bilibili_credential"
 KV_BILIBILI_PROFILE_CACHE = "bilibili_profile_cache"
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
