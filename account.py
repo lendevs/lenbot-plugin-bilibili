@@ -16,8 +16,8 @@ class Account:
         self.quota_file = ctx.data_dir / 'write-counts.json'
         self.zone = ZoneInfo(ctx.config['quota_timezone'])
 
-    def require(self, invocation, requester: str, *, kind: str | None = None):
-        self.ctx.require_owner(invocation.scene, requester)
+    def require(self, invocation, *, kind: str | None = None):
+        invocation.require_owner()
         config = self.ctx.config
         if kind is None and not config['account_read_enabled']:
             raise PermissionError('账号读取未在根配置开启')
@@ -68,8 +68,8 @@ class Account:
                                          for uid,entries in counts.items()},ensure_ascii=False),encoding='utf-8')
         temporary.replace(self.quota_file)
 
-    async def write(self, invocation, requester: str, kind: str, aid: int, desired: bool, collection_id: int | None = None):
-        self.require(invocation,requester,kind=kind)
+    async def write(self, invocation, kind: str, aid: int, desired: bool, collection_id: int | None = None):
+        self.require(invocation,kind=kind)
         if kind == 'favorite' and collection_id not in self.allowed:
             raise PermissionError('目标收藏夹未在allowed_collection_ids中明确允许')
         async with self.lock:
@@ -89,7 +89,7 @@ class Account:
                                                    'del_media_ids':'' if desired else str(collection_id)}
             if state is not None and state == desired:
                 return {'status':'already_observed','write_sent':False,'desired_state':desired,'observed':observed}
-            self.require(invocation,requester,kind=kind)
+            self.require(invocation,kind=kind)
             self.count_attempt(kind)
             try:
                 receipt = await self.client.write(path,form)

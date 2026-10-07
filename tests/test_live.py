@@ -33,9 +33,9 @@ async def first_poll(bot) -> None:
 async def test_status_tool_reads_room_again(source):
     source.json("/room", room(0))
     async with PluginTest(PACKAGE, config=config(source)) as bot:
-        assert json.loads(await bot.tool("get_live_status", {}))["items"][0]["status"] == "未开播"
+        assert json.loads(await bot.tool("bilibili_monitor", {"request": {"action": "status"}}))["items"][0]["status"] == "未开播"
         source.json("/room", room(1, "2026-10-05 20:00:00"))
-        item = json.loads(await bot.tool("get_live_status", {}))["items"][0]
+        item = json.loads(await bot.tool("bilibili_monitor", {"request": {"action": "status"}}))["items"][0]
         assert (item["status"], item["started_at"]) == ("直播中", "2026-10-05T20:00:00+08:00")
         assert source.requests[-1] == ("/room", {"room_id": ["22637261"]})
 

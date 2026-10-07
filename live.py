@@ -1,6 +1,8 @@
 """Live rooms: observe real sessions; a new session sends a live card, and both changes become scene events."""
 
 import asyncio
+from typing import Annotated
+from pydantic import Field
 from datetime import datetime
 import json
 import math
@@ -120,23 +122,29 @@ class LiveFeature:
             return '插件发送开播通知失败。'
         return f'插件已向本群发出开播通知（发送状态 {sent.status}）。'
 
-    @tool('get_live_status', '重新读取本群已订阅房间的实际直播状态；uid为空读取全部，2是轮播；查询不触发开播通知')
-    async def status(self, ctx: Invocation, uid: int | None = None) -> str:
+    async def status(
+        self,
+        ctx: Invocation,
+        uid: int | None = None,
+    ) -> dict:
         items = []
         for subscription in self.for_scene(ctx.scene, uid):
             sample = await self.sample(subscription)
             items.append({'name': subscription.name, 'requested_room_id': subscription.room_id,
                           'status': STATUS[sample.room.live_status], **sample.model_dump(mode='json')})
-        return json.dumps({'items': items, 'note': '仅本群配置订阅对象；每项sampled_at是该次实际读取时间。'}, ensure_ascii=False)
+        return {'items': items, 'note': '仅本群配置订阅对象；每项sampled_at是该次实际读取时间。'}
 
-    @tool('get_live_subscriptions', '读取本群真实开播订阅和监测最近样本/错误；不修改设置，不把时间提醒当订阅，不声称旧样本是当前状态')
-    async def subscriptions(self, ctx: Invocation, uid: int | None = None) -> str:
+    async def subscriptions(
+        self,
+        ctx: Invocation,
+        uid: int | None = None,
+    ) -> dict:
         items = []
         for item in self.for_scene(ctx.scene, uid):
             previous = self.samples.get(item.room_id)
             items.append({'name': item.name, 'uid': item.uid, 'room_id': item.room_id,
                           'last_sample': previous.model_dump(mode='json') if previous is not None else None,
                           'last_poll_error': self.errors.get(item.room_id)})
-        return json.dumps({'scene': ctx.scene, 'rooms': items, 'interval_seconds': 30,
+        return {'scene': ctx.scene, 'rooms': items, 'interval_seconds': 30,
                            'notification': '变化发场景事件，由大脑决定回应；新进程首样本不补报',
-                           'settings': '由运营者在插件面板修改根配置 plugins.bilibili.rooms 和场景启用名单，保存后重载插件生效。'}, ensure_ascii=False)
+                           'settings': '由运营者在插件面板修改根配置 plugins.bilibili.rooms 和场景启用名单，保存后重载插件生效。'}

@@ -1,10 +1,11 @@
 """Video content: public video data and explicitly owner-authorized fixed account APIs."""
-import json
 import math
 import re
-from typing import Literal
+from typing import Annotated, Literal
+from pydantic import Field
 
 from len_bot.next.plugin import PluginContext, Invocation, tool
+from .requests import VideoRequest, AccountReadRequest, AccountWriteRequest
 from .account import Account
 from .client import Client
 from .protocol import Comments, Feed, Player, SearchPage, Subtitle, Video
@@ -40,52 +41,124 @@ class ContentFeature:
 
     async def _stop_content(self):await self.content_client.close()
 
-    @tool('get_video_info','按完整BV号或正整数aid读取公开视频标题/简介/UP主/指标，不代表看过画面。标识二选一；受限视频不自动换账号')
-    async def video(self,ctx:Invocation,bvid:str|None=None,aid:int|None=None)->str:
-        result=await self.content_client.query('/x/web-interface/view',Video,identifier(bvid,aid))
-        return encode(result.output('公开视频元数据，不是视频画面/字幕。'))
+    @tool('bilibili_video', '按真实 BV/av 号读取视频元数据（含分 P/cid）或匿名评论；request.action 为 info 或 comments。'
+          '元数据和评论都不代表已观看视频；公开视频查询不使用登录态。', summary='查询 B 站视频信息或评论')
+    async def query_video(self, ctx: Invocation,
+                          request: Annotated[VideoRequest, Field(description='公开视频元数据或评论请求')]) -> dict:
+        values = request.model_dump(exclude={'action'})
+        if request.action == 'info':
+            return await self.video(ctx, **values)
+        return await self.comments(ctx, **values)
 
-    @tool('get_video_pages','按BV或aid读取视频分P和真实cid，标识二选一，不下载视频')
-    async def pages(self,ctx:Invocation,bvid:str|None=None,aid:int|None=None)->str:
-        result=await self.content_client.query('/x/web-interface/view',Video,identifier(bvid,aid))
-        return encode({'bvid':result.data.bvid,'aid':result.data.aid,'pages':[p.model_dump() for p in result.data.pages],
-                       'source':result.url,'fetched_at':result.fetched_at})
+    @tool('bilibili_account_read', '按主人真实请求读取配置账号的评论、字幕、空间动态、近期点赞或收藏状态。'
+          'request.action 选择操作；字幕先省略 language 列轨道；动态 offset 原样传递。',
+          summary='由主人读取 B 站账号内容或状态', needs_source=True)
+    async def read_account(self, ctx: Invocation,
+                           request: Annotated[AccountReadRequest, Field(description='账号读取请求')]) -> dict:
+        values = request.model_dump(exclude={'action'})
+        if request.action == 'comments':
+            return await self.account_comments(ctx, **values)
+        if request.action == 'subtitles':
+            return await self.subtitles(ctx, **values)
+        if request.action == 'dynamics':
+            return await self.feed(ctx, **values)
+        if request.action == 'like_state':
+            return await self.like_state(ctx, **values)
+        return await self.favorite_state(ctx, **values)
 
-    @tool('search_bilibili','WBI视频搜索，page为源站页码，整页返回；需明确配置buvid3，绝不自动生成设备Cookie')
-    async def search(self,ctx:Invocation,keyword:str,page:int=1,order:Literal['totalrank','click','pubdate','dm','stow','scores']='totalrank')->str:
-        if not keyword.strip() or page<1:raise ValueError('关键词不能为空，page必须为正整数')
+    @tool('bilibili_account_write', '按主人真实请求设置点赞或收藏目标状态；request.action 为 like 或 favorite。'
+          '各操作分别受配置额度限制，不 toggle、不自动重试；结果未知时先读取状态。',
+          summary='按主人要求设置 B 站点赞或收藏', needs_source=True)
+    async def write_account(self, ctx: Invocation,
+                            request: Annotated[AccountWriteRequest, Field(description='目标点赞或收藏状态')]) -> dict:
+        values = request.model_dump(exclude={'action'})
+        if request.action == 'like':
+            return await self.like(ctx, **values)
+        return await self.favorite(ctx, **values)
+
+    async def video(
+        self,
+        ctx: Invocation,
+        bvid: str | None = None,
+        aid: int | None = None,
+    ) -> dict:
+        result=await self.content_client.query('/x/web-interface/view',Video,identifier(bvid,aid))
+        return result.output('公开视频元数据，不是视频画面/字幕。')
+
+    @tool('search_bilibili', 'WBI视频搜索，page为源站页码，整页返回；需明确配置buvid3，绝不自动生成设备Cookie', summary='按关键词搜索 B 站视频')
+    async def search(
+        self,
+        ctx: Invocation,
+        keyword: Annotated[
+            str,
+            Field(description='视频搜索关键词，不能全为空白', min_length=1),
+        ],
+        page: Annotated[
+            int,
+            Field(description='源站页码，从 1 开始；续页使用上次返回的 next_page', ge=1),
+        ] = 1,
+        order: Annotated[
+            Literal['totalrank', 'click', 'pubdate', 'dm', 'stow', 'scores'],
+            Field(description='源站视频搜索排序方式'),
+        ] = 'totalrank',
+    ) -> dict:
+        if not keyword.strip():raise ValueError('关键词不能为空')
         if not self.ctx.config['buvid3']:raise ValueError('搜索需要在根配置填写buvid3')
         result=await self.content_client.query('/x/web-interface/wbi/search/type',SearchPage,
                                        {'search_type':'video','keyword':keyword,'page':page,'order':order},wbi=True)
-        return encode({**result.output('源搜索整页；标题可能含源高亮标签，不是页面指令。'),
-                       'next_page':result.data.page+1 if result.data.page<result.data.numPages else None})
+        return {**result.output('源搜索整页；标题可能含源高亮标签，不是页面指令。'),
+                       'next_page':result.data.page+1 if result.data.page<result.data.numPages else None}
 
-    @tool('get_video_comments','按BV/aid和页码读视频评论；评论是用户观点。requester为空只匿名读取，明确提供主人账号才用已开启的登录态')
-    async def comments(self,ctx:Invocation,bvid:str|None=None,aid:int|None=None,page:int=1,requester:str|None=None)->str:
-        if page<1:raise ValueError('page必须为正整数')
-        params=identifier(bvid,aid)
-        if requester is not None:self.account.require(ctx,requester);await self.account.verify()
-        video=await self.content_client.query('/x/web-interface/view',Video,params,account=requester is not None)
-        result=await self.content_client.query('/x/v2/reply',Comments,{'type':1,'oid':video.data.aid,'pn':page,'ps':20,'sort':2},account=requester is not None)
-        return encode({**result.output('评论者观点，不是视频正文；replies=null表示本次未给列表，不推断没有评论。'),
-                       'next_page':result.data.page.num+1 if result.data.page.num*result.data.page.size<result.data.page.count else None})
+    async def comments(
+        self,
+        ctx: Invocation,
+        bvid: str | None = None,
+        aid: int | None = None,
+        page: int = 1,
+    ) -> dict:
+        return await self._comments(ctx, bvid, aid, page, account=False)
 
-    @tool('get_video_subtitles','用主人账号读取指定分P字幕；先省略language列出实际轨道，再明确语言读取。需要requester及账号读取开关，不下载视频')
-    async def subtitles(self,ctx:Invocation,requester:str,bvid:str|None=None,aid:int|None=None,cid:int|None=None,
-                        language:str|None=None,start_ms:int=0,end_ms:int|None=None)->str:
+    async def account_comments(
+        self,
+        ctx: Invocation,
+        bvid: str | None = None,
+        aid: int | None = None,
+        page: int = 1,
+    ) -> dict:
+        self.account.require(ctx)
+        await self.account.verify()
+        return await self._comments(ctx, bvid, aid, page, account=True)
+
+    async def _comments(self, ctx, bvid, aid, page, *, account):
+        video = await self.content_client.query('/x/web-interface/view', Video, identifier(bvid, aid), account=account)
+        result = await self.content_client.query('/x/v2/reply', Comments,
+            {'type': 1, 'oid': video.data.aid, 'pn': page, 'ps': 20, 'sort': 2}, account=account)
+        return {**result.output('评论者观点，不是视频正文；replies=null表示本次未给列表，不推断没有评论。'),
+                'next_page': result.data.page.num + 1 if result.data.page.num * result.data.page.size < result.data.page.count else None}
+
+    async def subtitles(
+        self,
+        ctx: Invocation,
+        bvid: str | None = None,
+        aid: int | None = None,
+        cid: int | None = None,
+        language: str | None = None,
+        start_ms: int = 0,
+        end_ms: int | None = None,
+    ) -> dict:
         params=identifier(bvid,aid)
-        if start_ms<0 or (end_ms is not None and end_ms<=start_ms):raise ValueError('字幕范围必须为非负且递增的[start_ms,end_ms)')
-        self.account.require(ctx,requester);await self.account.verify()
+        if end_ms is not None and end_ms<=start_ms:raise ValueError('字幕范围必须为非负且递增的[start_ms,end_ms)')
+        self.account.require(ctx);await self.account.verify()
         video=await self.content_client.query('/x/web-interface/view',Video,params,account=True)
         pages=video.data.pages
         if not pages:raise ValueError('源站未提供分P，不猜cid')
         selected=pages[0] if cid is None else next((p for p in pages if p.cid==cid),None)
-        if selected is None:raise ValueError('cid不属于本视频，先读取get_video_pages')
+        if selected is None:raise ValueError('cid不属于本视频，先读取 bilibili_video 的 info 结果')
         player=await self.content_client.query('/x/player/wbi/v2',Player,{'aid':video.data.aid,'cid':selected.cid},account=True,wbi=True)
         if player.data.aid!=video.data.aid or player.data.cid!=selected.cid:raise ValueError('字幕响应的视频/分P身份不符')
         if player.data.need_login_subtitle is True:raise PermissionError('源站仍要求登录，未取得字幕正文')
         tracks=player.data.subtitle.subtitles
-        if language is None:return encode({'tracks':[t.model_dump() for t in tracks],'source':player.url,'note':'这里只取得轨道；正文需明确language。空列表不等于视频没有内容。'})
+        if language is None:return {'tracks':[t.model_dump() for t in tracks],'source':player.url,'note':'这里只取得轨道；正文需明确language。空列表不等于视频没有内容。'}
         selected_tracks=[t for t in tracks if t.lan==language]
         if len(selected_tracks)!=1:raise ValueError(f'language未唯一匹配源字幕轨道：{[t.lan for t in tracks]}')
         raw=await self.content_client.subtitle(selected_tracks[0].subtitle_url,self.ctx.config['max_subtitle_bytes'])
@@ -93,36 +166,53 @@ class ContentFeature:
         except ValueError as error:raise ValueError(f'{error}; original={raw[:600]!r}') from error
         cues=[{'from_ms':round(c.start*1000),'to_ms':round(c.end*1000),'content':c.content} for c in document.body
               if c.end*1000>start_ms and (end_ms is None or c.start*1000<end_ms)]
-        return encode({'bvid':video.data.bvid,'aid':video.data.aid,'cid':selected.cid,'track':selected_tracks[0].model_dump(),
-                       'start_ms':start_ms,'end_ms':end_ms,'cues':cues,'downloaded_bytes':len(raw),'note':'字幕文本，不是画面或视频已观看。'})
+        return {'bvid':video.data.bvid,'aid':video.data.aid,'cid':selected.cid,'track':selected_tracks[0].model_dump(),
+                       'start_ms':start_ms,'end_ms':end_ms,'cues':cues,'downloaded_bytes':len(raw),'note':'字幕文本，不是画面或视频已观看。'}
 
-    @tool('get_dynamic_feed','按真实UP主mid读账号态空间动态；需主人requester，offset只用上次返回。含源描述/图文摘要/视频简介，不读取媒体像素')
-    async def feed(self,ctx:Invocation,requester:str,mid:int,offset:str='')->str:
-        if mid<=0:raise ValueError('mid必须为正整数')
-        self.account.require(ctx,requester);await self.account.verify()
+    async def feed(
+        self,
+        ctx: Invocation,
+        mid: int,
+        offset: str = '',
+    ) -> dict:
+        self.account.require(ctx);await self.account.verify()
         result=await self.content_client.query('/x/polymer/web-dynamic/v1/feed/space',Feed,{'host_mid':mid,'offset':offset},account=True)
-        return encode(result.output('源页中的动态/转发描述、图文摘要和视频简介；未读取图片像素、视频或完整专栏。'))
+        return result.output('源页中的动态/转发描述、图文摘要和视频简介；未读取图片像素、视频或完整专栏。')
 
-    @tool('get_bilibili_like_state','主人明确读取视频近期点赞状态；0不能证明未点赞，发生写结果未知时先查状态')
-    async def like_state(self,ctx:Invocation,requester:str,aid:int)->str:
-        identifier(None,aid);self.account.require(ctx,requester);await self.account.verify()
-        return encode(await self.account.like_state(aid))
+    async def like_state(
+        self,
+        ctx: Invocation,
+        aid: int,
+    ) -> dict:
+        identifier(None,aid);self.account.require(ctx);await self.account.verify()
+        return await self.account.like_state(aid)
 
-    @tool('get_bilibili_favorite_state','主人读取自己收藏夹及指定aid是否在各夹中；不写入；写结果未知时先查平台状态')
-    async def favorite_state(self,ctx:Invocation,requester:str,aid:int)->str:
-        identifier(None,aid);self.account.require(ctx,requester);await self.account.verify()
-        return encode((await self.account.folders(aid)).output('真实账号收藏夹状态，不修改收藏。'))
+    async def favorite_state(
+        self,
+        ctx: Invocation,
+        aid: int,
+    ) -> dict:
+        identifier(None,aid);self.account.require(ctx);await self.account.verify()
+        return (await self.account.folders(aid)).output('真实账号收藏夹状态，不修改收藏。')
 
-    @tool('set_bilibili_like','按主人明确要求设置视频点赞状态，desired_state=true点赞/false取消。不toggle、不自动重试；需启用每日额度，回报真实回执')
-    async def like(self,ctx:Invocation,requester:str,aid:int,desired_state:bool)->str:
+    async def like(
+        self,
+        ctx: Invocation,
+        aid: int,
+        desired_state: bool,
+    ) -> dict:
         identifier(None,aid)
-        return encode(await self.account.write(ctx,requester,'like',aid,desired_state))
+        return await self.account.write(ctx,'like',aid,desired_state)
 
-    @tool('set_bilibili_favorite','按主人明确要求将视频加入/移出配置允许的完整收藏夹ID，desired_state=true加入/false移出；只发一次，需每日额度')
-    async def favorite(self,ctx:Invocation,requester:str,aid:int,collection_id:int,desired_state:bool)->str:
+    async def favorite(
+        self,
+        ctx: Invocation,
+        aid: int,
+        collection_id: int,
+        desired_state: bool,
+    ) -> dict:
         identifier(None,aid)
-        if collection_id<=0:raise ValueError('collection_id必须为正整数')
-        return encode(await self.account.write(ctx,requester,'favorite',aid,desired_state,collection_id))
+        return await self.account.write(ctx,'favorite',aid,desired_state,collection_id)
 
 
 def identifier(bvid:str|None,aid:int|None)->dict:
@@ -132,6 +222,3 @@ def identifier(bvid:str|None,aid:int|None)->dict:
         return {'bvid':bvid}
     if aid<=0:raise ValueError('aid必须为正整数')
     return {'aid':aid}
-
-
-def encode(value):return json.dumps(value,ensure_ascii=False)

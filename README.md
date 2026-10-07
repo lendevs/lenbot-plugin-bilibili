@@ -56,8 +56,8 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 
 低频工具：
 
-- `get_live_status(uid=None)`：重新读取本群订阅对象，请求失败就报原始错误；不拿旧样本当当前状态，也不影响监测基线。
-- `get_live_subscriptions(uid=None)`：本群真实订阅、最近一次成功采样和最近一次失败。`last_sample` 只是上次成功样本，当前状态用上一个工具重读。
+- `bilibili_monitor(request={"action": "status", "uid": ...})`：重新读取本群订阅对象，请求失败就报原始错误；不拿旧样本当当前状态，也不影响监测基线。
+- `bilibili_monitor(request={"action": "subscriptions", "uid": ...})`：本群真实订阅、最近一次成功采样和最近一次失败。`last_sample` 只是上次成功样本，当前状态用上一个工具重读。
 
 本插件不自动增删订阅，运营者在面板修改 `rooms` 和场景启用名单。
 
@@ -70,7 +70,7 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 - 卡片发送失败（宿主返回 failed）时不推进进度，下次轮询重发；返回 unconfirmed 等其他状态视为已发，避免重复刷屏。同一条内容推到多个群只画一次卡片。
 - 卡片字体用随插件分发的更纱黑体（Sarasa Mono SC），缺字的符号回退到系统里的 Arial Unicode、DejaVu Sans 或 Noto 字体。
 
-低频工具 `get_bilibili_follows`：本群的关注项、每个 UP 主最近一次轮询时间和错误、评论待投递数量。不修改设置。
+`bilibili_monitor(request={"action": "follows"})`：本群的关注项、每个 UP 主最近一次轮询时间和错误、评论待投递数量。不修改设置。
 
 ## 视频内容
 
@@ -83,13 +83,13 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 
 工具：
 
-- `get_video_info` / `get_video_pages`：完整 BV 号或正整数 aid 二选一，公开视频元数据与分P，不代表看过视频。
-- `search_bilibili`：WBI 签名的搜索端点，`page` 为来源页码，整页返回并给出 `next_page`。WBI 口令成功后缓存 1 小时，失败不重试。
-- `get_video_comments`：默认匿名；明确传入主人 `requester` 才用登录态，匿名失败不自动切换。
-- `get_video_subtitles`：主人登录态读取指定分P；先不传 `language` 列出真实轨道，再指定语言读取时间范围。字幕走独立的无 Cookie 请求，不播放或下载视频。
-- `get_dynamic_feed`：主人登录态的空间动态，保留来源描述、图文摘要、视频简介和响应里已有的转发；`offset` 原样传递。
-- `get_bilibili_like_state` / `get_bilibili_favorite_state`：主人独立核对平台状态。点赞接口返回 0 只表示没查到近期点赞。
-- `set_bilibili_like` / `set_bilibili_favorite`：明确 `desired_state`；先核对身份与当前状态，已符合就不发请求，否则只请求一次。非零业务码如实返回 `platform_error`；等待回执时超时、取消或响应异常算结果未知，先查状态，不自动重发。
+- `bilibili_video`：request.action=info 读元数据及分P，comments 匿名读评论；不代表已看过视频。
+- `search_bilibili`：视频搜索，来源页码与 next_page 原样续页。
+- `bilibili_monitor`：status 新读取当前直播状态，subscriptions/follows 读取本群配置与旧样本，不修改或推送。
+- `bilibili_account_read`：request.action 为 comments、subtitles、dynamics、like_state、favorite_state；需要真实 source_message_id 和账号读取开关。字幕先列实际轨道再取正文；点赞状态0不能证明未点赞。
+- `bilibili_account_write`：request.action 为 like/favorite；desired_state 明确设置或取消，收藏需要 collection_id。两个动作分别受配置额度限制，未知结果先查询状态，不自动重发。
+
+共五项能力。request 按 action 校验，只接受当前操作的字段；source_message_id 放在 request 外由宿主解析。旧 requester 参数已删除，不能用模型填写的主人账号授权。
 
 同一账号的写入在插件内串行执行。插件数据目录的 `write-counts.json` 只保存账号、日期和两种动作的写尝试次数，在发请求前写入；结果未知或取消也计一次。日额度按唯一的 `quota_timezone` 计算，跨群调用不会重置。计数文件损坏直接报错。不要让多个进程共用同一插件数据目录。
 
@@ -104,3 +104,11 @@ uv run --project ../LenBot --no-sync pytest -q
 测试用本地 HTTP 服务模拟直播间接口和图片，用 `tests/fake_sdk.py` 替换 bilibili-api-python（录制的真实空间动态页在 `tests/data/`），不访问真实 B 站，也不需要安装 SDK。真实账号、源站当前协议和 QQ 内的使用效果未在测试中验证。
 
 许可证：GNU AGPL v3 或更新版本，见 [LICENSE](LICENSE)；协议来源见 [SOURCE.md](SOURCE.md)。
+
+## 工具接口
+
+工具采用接口 1 的显式简介、Field 参数说明与 `prompts/tools.md` 共享指南，返回原生 JSON 或文本。用 `PluginTest.preview_tools()` 查看模型说明、参数与可用性；模型服务默认关闭，真实发送仍单独核对。兼容和更新事项见 [CHANGELOG](CHANGELOG.md)。
+
+CI 固定到包含当前插件接口的宿主开发提交；本次未创建版本标签或 Release。catalog-entry.json 只记录开发安装来源，未公开插件不加入主目录。
+
+本机生成 ZIP：`uv run --no-project --python 3.13 python scripts/package.py /tmp/plugin.zip`。打包取 Git 已跟踪的运行源码和资源，新增文件需先加入 Git；不会收录本机环境、测试或配置。

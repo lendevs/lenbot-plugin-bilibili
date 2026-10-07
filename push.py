@@ -450,16 +450,14 @@ class PushFeature:
             self._emoji[url] = image
         return image
 
-    @tool('get_bilibili_follows', '读取本群关注的UP主推送设置和最近轮询结果；不修改设置，不代表UP主没有新内容')
-    async def follow_status(self, ctx: Invocation) -> str:
+    async def follow_status(self, ctx: Invocation) -> dict:
         items = [{'uid': item.uid, 'name': item.name, 'dynamic': item.dynamic, 'video': item.video,
                   'comment': item.comment, **self.push_status.get(str(item.uid), {})}
                  for item in self.follows if ctx.scene in item.scenes]
         journal = None if self.comment_journal is None else {'pending_deliveries': self.comment_journal.pending_delivery_count()}
-        return json.dumps({'scene': ctx.scene, 'follows': items, 'interval_seconds': self.push_config.poll_interval_seconds,
+        return {'scene': ctx.scene, 'follows': items, 'interval_seconds': self.push_config.poll_interval_seconds,
                            'comment_journal': journal,
-                           'settings': '由运营者在插件面板修改 plugins.bilibili.follows，保存后重载插件生效。'},
-                          ensure_ascii=False)
+                           'settings': '由运营者在插件面板修改 plugins.bilibili.follows，保存后重载插件生效。'}
 
 
 def card_kind(notification: BilibiliNotification) -> str:

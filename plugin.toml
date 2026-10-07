@@ -1,5 +1,5 @@
 name = "bilibili"
-version = "1.0.0"
+version = "1.1.0"
 interface = 1
 requires_lenbot = ">=0.2,<1"
 requires_python = ">=3.13"
@@ -10,6 +10,9 @@ license = "AGPL-3.0-or-later"
 repository = "https://github.com/lendevs/lenbot-plugin-bilibili"
 description = "哔哩哔哩合集：公开视频/分P/WBI搜索/评论，主人明确授权的字幕、动态和固定点赞收藏动作；每30秒观察订阅直播间，开播推送卡片，开播/下播变化进入场景事件；关注UP主的新动态、新视频和本人评论推送卡片。"
 dependencies = ["bilibili-api-python==17.4.1"]
+
+[model]
+instructions = "prompts/tools.md"
 
 [config.rooms]
 label = "直播监测的直播间"
