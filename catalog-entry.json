@@ -6,7 +6,7 @@
     "LEN5010"
   ],
   "license": "AGPL-3.0-or-later",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "interface": 1,
   "requires_lenbot": ">=0.2,<1",
   "category": "内容查询",
@@ -23,5 +23,9 @@
   ],
   "install": "git",
   "repository": "https://github.com/lendevs/lenbot-plugin-bilibili",
-  "ref": "main"
+  "ref": "main",
+  "permissions": [
+    "send",
+    "events"
+  ]
 }

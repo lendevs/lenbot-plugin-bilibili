@@ -525,9 +525,7 @@ class BilibiliGateway:
                 pendant.get("image") or pendant.get("image_enhance") or ""
             ),
             total_likes=_optional_non_negative_int(
-                up_stat.get("likes", up_stat.get("archive", {}).get("view"))
-                if isinstance(up_stat.get("archive"), dict)
-                else up_stat.get("likes")
+                up_stat.get("likes")
             ),
             following=_optional_non_negative_int(relation.get("following")),
             follower=_optional_non_negative_int(relation.get("follower")),

@@ -8,7 +8,7 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 
 ## 安装
 
-在 LenBot 面板「能力 → 插件」填写本仓库的 Git 地址，或导入发布页的 ZIP，应用后配置参数并选择启用的群。也可以把仓库目录直接放进实例的 `plugins/`。
+在 LenBot 面板「插件」填写本仓库的 Git 地址，或导入发布页的 ZIP，应用后配置参数并选择启用的群。也可以把仓库目录直接放进实例的 `plugins/`。
 
 根配置的局部示例（不要覆盖完整根配置）：
 
@@ -112,3 +112,9 @@ uv run --project ../LenBot --no-sync pytest -q
 CI 调用 LenBot 的可复用工作流，跟随宿主 master 测试；本次未创建版本标签或 Release。catalog-entry.json 只记录开发安装来源，未公开插件不加入主目录。
 
 本机生成 ZIP（LenBot 仓库与本仓库放在同一目录下）：`uv run --no-project --python 3.13 python ../LenBot/scripts/package_plugin.py . /tmp/plugin.zip`。打包取 Git 已跟踪的运行源码和资源，新增文件需先加入 Git；不会收录本机环境、测试或配置。
+
+## 宿主能力与验证范围
+
+清单明确声明 `send`、`events`。这些权限约束宿主提供的能力，不限制插件自行执行的 Python 或网络访问。插件运行在宿主进程中；当前功能使用工具或后台协程，保持 `isolation = "inline"`。
+
+本机协议测试只使用临时配置和模拟发送。测试通过不代表真实模型理解、外部服务或平台送达已验证；真实费用、账号写操作和群发送需要分别授权。
