@@ -42,7 +42,7 @@ class ContentFeature:
     async def _stop_content(self):await self.content_client.close()
 
     @tool('bilibili_video', '按真实 BV/av 号读取视频元数据（含分 P/cid）或匿名评论；request.action 为 info 或 comments。'
-          '元数据和评论都不代表已观看视频；公开视频查询不使用登录态。', summary='查询 B 站视频信息或评论')
+          '公开视频查询不使用登录态。', summary='查询 B 站视频信息或评论')
     async def query_video(self, ctx: Invocation,
                           request: Annotated[VideoRequest, Field(description='公开视频元数据或评论请求')]) -> dict:
         values = request.model_dump(exclude={'action'})
@@ -158,7 +158,7 @@ class ContentFeature:
         if player.data.aid!=video.data.aid or player.data.cid!=selected.cid:raise ValueError('字幕响应的视频/分P身份不符')
         if player.data.need_login_subtitle is True:raise PermissionError('源站仍要求登录，未取得字幕正文')
         tracks=player.data.subtitle.subtitles
-        if language is None:return {'tracks':[t.model_dump() for t in tracks],'source':player.url,'note':'这里只取得轨道；正文需明确language。空列表不等于视频没有内容。'}
+        if language is None:return {'tracks':[t.model_dump() for t in tracks],'source':player.url,'note':'这里只取得轨道；正文需明确language。'}
         selected_tracks=[t for t in tracks if t.lan==language]
         if len(selected_tracks)!=1:raise ValueError(f'language未唯一匹配源字幕轨道：{[t.lan for t in tracks]}')
         raw=await self.content_client.subtitle(selected_tracks[0].subtitle_url,self.ctx.config['max_subtitle_bytes'])

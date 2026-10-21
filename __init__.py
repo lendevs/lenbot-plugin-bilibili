@@ -31,7 +31,7 @@ class Bilibili(PushFeature, LiveFeature, ContentFeature, Plugin):
                 await self._stop_content()
 
     @tool('bilibili_monitor', '查询本群直播订阅、关注 UP 主配置或重新读取订阅房间的直播状态。'
-          'request.action 为 subscriptions、follows 或 status；旧监测样本不代表当前状态，不修改配置或触发推送。',
+          'request.action 为 subscriptions、follows 或 status；不修改配置或触发推送。',
           summary='查询 B 站订阅配置或当前直播状态')
     async def query_monitor(self, ctx: Invocation,
                       request: Annotated[MonitorRequest, Field(description='直播状态或订阅配置查询')]) -> dict:

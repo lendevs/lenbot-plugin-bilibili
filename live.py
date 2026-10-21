@@ -94,7 +94,7 @@ class LiveFeature:
                         delivered = ''
                     await ctx.emit_event(scene, f'{item.name}（B站UID {current.room.uid}，房间 {current.room.room_id}）：{change}。\n'
                                          f'标题：{current.room.title}\n{current.url}\n采样时间：{sampled}。{delivered}'
-                                         '这是当时的房间采样，不代表稍后仍在直播；是否回应由当前对话决定。')
+                                         '是否回应由当前对话决定。')
             except Exception as error:
                 self.errors[item.room_id] = {'at': ctx.now(), 'error': f'{type(error).__name__}: {error}'}
                 ctx.report_error(f'房间 {item.room_id} 采样', error)

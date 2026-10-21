@@ -52,7 +52,7 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 - 新场次先向每个群发一张开播卡片（主播头像、封面、标题、分区），再发场景事件，事件里写明卡片的实际发送状态。卡片画不出来时改发文字。下播只有场景事件。
 - `at_all` 默认关闭。打开后开播卡片前带 @全体成员；机器人不是管理员或当天次数用完导致发送失败时，去掉 @全体 再发一次。
 - 某个房间采样失败只结束它本次采样并保留原始错误，其他房间继续；下一周期重新观察。相同场次不重复发事件。不保证宿主硬崩溃时严格只投递一次。
-- 安静时段由宿主场景事件规则处理。事件是当时的观察，不保证大脑稍后回应时仍在直播。
+- 安静时段由宿主场景事件规则处理。
 
 低频工具：
 
@@ -83,10 +83,10 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 
 工具：
 
-- `bilibili_video`：request.action=info 读元数据及分P，comments 匿名读评论；不代表已看过视频。
+- `bilibili_video`：request.action=info 读元数据及分P，comments 匿名读评论。
 - `search_bilibili`：视频搜索，来源页码与 next_page 原样续页。
 - `bilibili_monitor`：status 新读取当前直播状态，subscriptions/follows 读取本群配置与旧样本，不修改或推送。
-- `bilibili_account_read`：request.action 为 comments、subtitles、dynamics、like_state、favorite_state；需要真实 source_message_id 和账号读取开关。字幕先列实际轨道再取正文；点赞状态0不能证明未点赞。
+- `bilibili_account_read`：request.action 为 comments、subtitles、dynamics、like_state、favorite_state；需要真实 source_message_id 和账号读取开关。字幕先列实际轨道再取正文。
 - `bilibili_account_write`：request.action 为 like/favorite；desired_state 明确设置或取消，收藏需要 collection_id。两个动作分别受配置额度限制，未知结果先查询状态，不自动重发。
 
 共五项能力。request 按 action 校验，只接受当前操作的字段；source_message_id 放在 request 外由宿主解析。旧 requester 参数已删除，不能用模型填写的主人账号授权。
