@@ -67,7 +67,7 @@ class ContentFeature:
         return await self.favorite_state(ctx, **values)
 
     @tool('bilibili_account_write', '按主人真实请求设置点赞或收藏目标状态；request.action 为 like 或 favorite。'
-          '各操作分别受配置额度限制，不 toggle、不自动重试；结果未知时先读取状态。',
+          '各操作分别受配置额度限制，desired_state 设定目标状态；结果未知时先读取状态。',
           summary='按主人要求设置 B 站点赞或收藏', needs_source=True)
     async def write_account(self, ctx: Invocation,
                             request: Annotated[AccountWriteRequest, Field(description='目标点赞或收藏状态')]) -> dict:
@@ -83,9 +83,9 @@ class ContentFeature:
         aid: int | None = None,
     ) -> dict:
         result=await self.content_client.query('/x/web-interface/view',Video,identifier(bvid,aid))
-        return result.output('公开视频元数据，不是视频画面/字幕。')
+        return result.output('公开视频元数据（标题、简介、分P等文字信息）。')
 
-    @tool('search_bilibili', 'WBI视频搜索，page为源站页码，整页返回；需明确配置buvid3，绝不自动生成设备Cookie', summary='按关键词搜索 B 站视频')
+    @tool('search_bilibili', 'WBI视频搜索，page为源站页码，整页返回；需要配置buvid3', summary='按关键词搜索 B 站视频')
     async def search(
         self,
         ctx: Invocation,
@@ -106,7 +106,7 @@ class ContentFeature:
         if not self.ctx.config['buvid3']:raise ValueError('搜索需要在根配置填写buvid3')
         result=await self.content_client.query('/x/web-interface/wbi/search/type',SearchPage,
                                        {'search_type':'video','keyword':keyword,'page':page,'order':order},wbi=True)
-        return {**result.output('源搜索整页；标题可能含源高亮标签，不是页面指令。'),
+        return {**result.output('源搜索整页；标题里可能带源站的高亮标签。'),
                        'next_page':result.data.page+1 if result.data.page<result.data.numPages else None}
 
     async def comments(
@@ -133,7 +133,7 @@ class ContentFeature:
         video = await self.content_client.query('/x/web-interface/view', Video, identifier(bvid, aid), account=account)
         result = await self.content_client.query('/x/v2/reply', Comments,
             {'type': 1, 'oid': video.data.aid, 'pn': page, 'ps': 20, 'sort': 2}, account=account)
-        return {**result.output('评论者观点，不是视频正文；replies=null表示本次未给列表，不推断没有评论。'),
+        return {**result.output('评论区内容，代表评论者的观点；replies=null表示这次接口没有返回列表。'),
                 'next_page': result.data.page.num + 1 if result.data.page.num * result.data.page.size < result.data.page.count else None}
 
     async def subtitles(
@@ -167,7 +167,7 @@ class ContentFeature:
         cues=[{'from_ms':round(c.start*1000),'to_ms':round(c.end*1000),'content':c.content} for c in document.body
               if c.end*1000>start_ms and (end_ms is None or c.start*1000<end_ms)]
         return {'bvid':video.data.bvid,'aid':video.data.aid,'cid':selected.cid,'track':selected_tracks[0].model_dump(),
-                       'start_ms':start_ms,'end_ms':end_ms,'cues':cues,'downloaded_bytes':len(raw),'note':'字幕文本，不是画面或视频已观看。'}
+                       'start_ms':start_ms,'end_ms':end_ms,'cues':cues,'downloaded_bytes':len(raw),'note':'字幕文本，来自视频的字幕轨。'}
 
     async def feed(
         self,

@@ -64,7 +64,7 @@ minimum = 1
 [config.follows.fields.name]
 type = "string"
 label = "备注名"
-description = "只用于面板和查询，卡片显示 B 站上的实际昵称"
+description = "面板和查询里显示的名称，卡片使用 B 站上的实际昵称"
 default = ""
 
 [config.follows.fields.scenes]
@@ -113,7 +113,7 @@ label = "直播状态接口"
 group = "直播监测"
 type = "url"
 default = "https://api.live.bilibili.com/room/v1/Room/get_info"
-description = "唯一直播状态接口，按room_id查询；不自动切换地址。"
+description = "按room_id查询直播状态的接口地址。"
 
 [config.live_source_timezone]
 label = "源站时区"
@@ -127,14 +127,14 @@ label = "超时（秒）"
 group = "高级"
 type = "number"
 default = 15
-description = "每次HTTP请求超时秒数，失败不重试、不切换端点。"
+description = "每次HTTP请求的超时秒数。"
 
 [config.max_subtitle_bytes]
 label = "字幕大小上限（字节）"
 group = "高级"
 type = "integer"
 default = 2000000
-description = "字幕JSON读取字节上限，超限报错，不返回残缺字幕。"
+description = "字幕JSON读取字节上限，超限时报错。"
 
 [config.account_read_enabled]
 label = "允许用账号读取"
@@ -148,14 +148,14 @@ label = "账号 UID"
 group = "B 站账号"
 type = "integer"
 default = 0
-description = "明确配置的真实B站账号UID；0表示未配置，不自动登录/推断账号。"
+description = "B站账号UID；0表示未配置。"
 
 [config.sessdata]
 label = "SESSDATA"
 group = "B 站账号"
 type = "secret"
 default = ""
-description = "主人账号SESSDATA，仅发送给固定B站API；不交给模型或任务。"
+description = "主人账号SESSDATA，只发送给固定的B站API。"
 
 [config.bili_jct]
 label = "bili_jct"
@@ -169,14 +169,14 @@ label = "buvid3"
 group = "B 站账号"
 type = "secret"
 default = ""
-description = "运营提供的设备Cookie，搜索和点赞必需；不自动生成。公共请求不带SESSDATA。"
+description = "搜索和点赞使用的设备Cookie，由运营者填写。"
 
 [config.daily_like_limit]
 label = "每天点赞上限"
 group = "写操作额度"
 type = "integer"
 default = 0
-description = "同账号每天点赞/取消点赞写尝试上限；0关闭。结果未知和取消仍占一次，不自动重发。"
+description = "同账号每天点赞/取消点赞写尝试上限；0关闭。结果未知和取消也计一次。"
 
 [config.daily_favorite_limit]
 label = "每天收藏上限"
@@ -197,4 +197,4 @@ label = "额度时区"
 group = "写操作额度"
 type = "string"
 default = "Asia/Shanghai"
-description = "账号每日额度的唯一时区，不随调用群改变。"
+description = "账号每日额度使用的时区，所有群共用。"

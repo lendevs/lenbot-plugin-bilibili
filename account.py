@@ -28,7 +28,7 @@ class Account:
         if kind is not None and not config['bili_jct']:
             raise ValueError('写入需要明确bili_jct')
         if kind == 'like' and not config['buvid3']:
-            raise ValueError('点赞需要明确buvid3，不自动生成设备Cookie')
+            raise ValueError('点赞需要配置buvid3')
 
     async def verify(self):
         result = await self.client.query(NAV, Identity, account=True)

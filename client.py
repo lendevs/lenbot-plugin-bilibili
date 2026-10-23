@@ -1,4 +1,4 @@
-"""One HTTP request per endpoint; public and account cookie jars never mix."""
+"""One HTTP request per endpoint, with separate public and account cookie jars."""
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -97,7 +97,7 @@ class Client:
         envelope, _, url = await self._wire(path, account=True, form={**form,'csrf':self.bili_jct})
         return {'status': 'acknowledged' if envelope.code == 0 else 'platform_error',
                 'code': envelope.code, 'message': envelope.message, 'source': url,
-                'note': '平台业务回执；非零码报告错误，不推断最终状态已改变或未改变。不是随后再次观察的状态。'}
+                'note': '平台业务回执；非零码是平台报告的错误，最终状态用读取接口确认。'}
 
     async def subtitle(self, url: str, limit: int) -> bytes:
         if url.startswith('//'):url = 'https:' + url

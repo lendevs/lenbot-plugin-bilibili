@@ -1,4 +1,4 @@
-"""Typed public room samples; status 2 is replay, not a new live session."""
+"""Typed public room samples; status 1 is live and status 2 is replay."""
 
 from datetime import datetime
 from typing import Annotated

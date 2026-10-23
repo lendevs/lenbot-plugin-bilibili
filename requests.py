@@ -56,14 +56,14 @@ class FavoriteState(Request):
 class SetLike(Request):
     action: Literal['like']
     aid: Annotated[int, Field(description='正整数 av 号；视频查询时与 bvid 二选一')]
-    desired_state: Annotated[bool, Field(description='true 设置，false 取消；不 toggle')]
+    desired_state: Annotated[bool, Field(description='true 设置，false 取消')]
 
 
 class SetFavorite(Request):
     action: Literal['favorite']
     aid: Annotated[int, Field(description='正整数 av 号；视频查询时与 bvid 二选一')]
     collection_id: Annotated[int, Field(description='配置明确允许且属于该账号的完整收藏夹 ID', ge=1)]
-    desired_state: Annotated[bool, Field(description='true 设置，false 取消；不 toggle')]
+    desired_state: Annotated[bool, Field(description='true 设置，false 取消')]
 
 
 class LiveStatus(Request):
