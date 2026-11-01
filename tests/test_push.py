@@ -145,3 +145,70 @@ async def test_follows_require_login_cookie():
     with pytest.raises(RuntimeError, match="SESSDATA"):
         async with PluginTest(PACKAGE, config={"follows": config()["follows"]}):
             pass
+
+
+@pytest.mark.asyncio
+async def test_paused_scene_keeps_its_comment_resources(tmp_path):
+    """Retirement follows the configured follows, as upstream does; a scene switched off only pauses work."""
+    from types import SimpleNamespace
+    from bilibili_plugin.comment_capture import CommentRetryPolicy
+    from bilibili_plugin.comment_journal import CommentJournal
+    from bilibili_plugin.gateway import BilibiliCommentResource
+    from bilibili_plugin.push import PushFeature, follows
+
+    def resource(uid: int) -> BilibiliCommentResource:
+        return BilibiliCommentResource(key=f'video:{uid}', owner_uid=str(uid), owner_name='UP', resource_kind='video',
+                                       oid=uid, type_value=1, title='视频', url=f'https://b23.tv/{uid}', published_at=1)
+
+    async def owner_name(uid):
+        return 'UP'
+
+    async def discover(uid, name):
+        return [resource(int(uid))]
+
+    push = PushFeature.__new__(PushFeature)
+    push.follows = follows([{'uid': 1, 'scenes': ['onebot:group:1'], 'comment': True},
+                            {'uid': 2, 'scenes': ['onebot:group:2'], 'comment': True}])
+    push.ctx = SimpleNamespace(scenes=('onebot:group:1', 'onebot:group:2'), report_error=lambda *args: None)
+    push._reported = {}
+    push.retry_policy = CommentRetryPolicy(random_value=lambda: 0.5)
+    push.gateway = SimpleNamespace(get_comment_resource_owner_name=owner_name)
+    push.monitor = SimpleNamespace(discover_comment_resources=discover)
+    push.comment_journal = CommentJournal(tmp_path / 'comments.sqlite3')
+    try:
+        assert await push.refresh_catalog(1000) and await push.refresh_catalog(1000)
+        push.ctx.scenes = ('onebot:group:1',)
+        await push.refresh_catalog(1100)
+        retired = push.comment_journal._connection.execute(
+            "SELECT owner_uid FROM resource_lifecycle WHERE retired_at > 0").fetchall()
+        assert retired == []
+    finally:
+        push.comment_journal.close()
+
+
+@pytest.mark.asyncio
+async def test_stale_profile_draws_at_once_and_refreshes_beside_it():
+    from types import SimpleNamespace
+    from bilibili_plugin.gateway import BilibiliAuthorCardProfile
+    from bilibili_plugin.push import PushFeature
+
+    release = asyncio.Event()
+    saved = []
+
+    async def fetch(uid):
+        await release.wait()
+        return BilibiliAuthorCardProfile(uid=uid, name='新名字', avatar_url='', fetched_at=int(time.time()))
+
+    async def set_kv(key, value):
+        saved.append(value)
+
+    push = PushFeature.__new__(PushFeature)
+    push.profiles = {'1': BilibiliAuthorCardProfile(uid='1', name='旧名字', avatar_url='a.png', fetched_at=1)}
+    push._profile_refreshes = {}
+    push._reported = {}
+    push.gateway = SimpleNamespace(get_user_card_profile=fetch)
+    push.ctx = SimpleNamespace(set_kv=set_kv, report_error=lambda *args: None)
+    assert (await push.author_profile('1')).name == '旧名字'
+    release.set()
+    await until(lambda: not push._profile_refreshes)
+    assert push.profiles['1'].name == '新名字' and push.profiles['1'].avatar_url == 'a.png' and saved

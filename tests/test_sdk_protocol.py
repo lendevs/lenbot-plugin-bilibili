@@ -72,7 +72,7 @@ async def source(likes):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('likes', [None, 73])
-async def test_profile_uses_real_sdk_fields_and_never_substitutes_views_for_likes(sdk, likes):
+async def test_profile_reads_only_the_card_fields_without_csrf(sdk, likes):
     settings = sdk.request_settings
     old_auto, old_retries = settings.get_enable_auto_buvid(), settings.get_wbi_retry_times()
     old_client, _ = sdk.get_selected_client()
@@ -84,11 +84,11 @@ async def test_profile_uses_real_sdk_fields_and_never_substitutes_views_for_like
         async with source(likes) as (port, requests), httpx.AsyncClient(transport=Loopback(port), trust_env=False) as session:
             sdk.set_session(session)
             gateway = BilibiliGateway(request_client='httpx', credential_data={
-                'sessdata': 'synthetic', 'bili_jct': 'a' * 32, 'buvid3': 'synthetic-3', 'buvid4': 'synthetic-4'})
+                'sessdata': 'synthetic', 'buvid3': 'synthetic-3', 'buvid4': 'synthetic-4'})
             profile = await gateway.get_user_card_profile('672328094')
-            assert profile.name == '合成UP' and profile.following == 12 and profile.follower == 34
-            assert profile.total_likes == likes
-            assert [path for path, _ in requests].count('/x/space/upstat') == 1
+            assert profile.name == '合成UP'
+            assert profile.total_likes is None and profile.following is None and profile.follower is None
+            assert not any(path in {'/x/space/upstat', '/x/relation/stat'} for path, _ in requests)
             assert [path for path, _ in requests].count('/x/space/wbi/acc/info') == 1
             info = next(query for path, query in requests if path == '/x/space/wbi/acc/info')
             assert info['mid'] == ['672328094'] and 'w_rid' in info and 'wts' in info

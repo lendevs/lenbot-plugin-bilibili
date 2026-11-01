@@ -17,7 +17,7 @@ import httpx
 from PIL import Image as Picture, ImageOps
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
 
-from len_bot.plugin import Image, Invocation, Mention, PluginContext, Sent, Text, tool
+from len_bot.plugin import Image, Invocation, Mention, PluginContext, Sent, Text
 from .card_kit import Fonts, Run
 from .comment_capture import CommentCaptureCoordinator, CommentCaptureError, CommentRetryPolicy, CommentWorkScheduler
 from .comment_journal import CommentJournal
@@ -108,7 +108,7 @@ class PushFeature:
             raise ValueError('关注推送需要填写 SESSDATA：空间动态和评论接口未登录时会被风控拒绝')
         self.push_config = build_bilibili_push_config({
             'enabled': True, 'poll_interval_seconds': config['push_poll_seconds'], 'request_client': 'httpx',
-            'push_live': False, 'sessdata': config['sessdata'], 'bili_jct': config['bili_jct'],
+            'push_live': False, 'sessdata': config['sessdata'],
             'buvid3': config['buvid3'], 'dedeuserid': str(config['account_uid'] or ''),
             'comment_request_interval_seconds': config['comment_request_seconds']})
         self.gateway = BilibiliGateway(request_client='httpx', credential_data=self.push_config.credential_data,
@@ -130,6 +130,7 @@ class PushFeature:
         self._cards: dict[str, tuple[float, bytes]] = {}
         self._reported: dict[str, float] = {}
         self._state_lock = asyncio.Lock()
+        self._profile_refreshes: dict[str, asyncio.Task] = {}
 
     async def _start_push(self) -> None:
         self.push_state = await self.ctx.get_kv('push_state', {})
@@ -145,6 +146,8 @@ class PushFeature:
             self.ctx.start_task('评论抓取', self._comment_loop())
 
     async def _stop_push(self) -> None:
+        for task in list(self._profile_refreshes.values()):
+            task.cancel()
         try:
             await self.media_client.aclose()
         finally:
@@ -158,6 +161,10 @@ class PushFeature:
 
     def comment_uids(self) -> list[str]:
         return [str(item.uid) for item in self.follows if item.comment and self.follow_targets(item)]
+
+    def configured_comment_uids(self) -> list[str]:
+        # Retirement follows the configuration, as upstream does; a scene switched off only pauses the work.
+        return [str(item.uid) for item in self.follows if item.comment]
 
     def comment_scenes(self) -> list[str]:
         return sorted({scene for item in self.follows if item.comment for scene in self.follow_targets(item)})
@@ -248,7 +255,7 @@ class PushFeature:
 
     async def refresh_catalog(self, now: int) -> bool:
         uids = self.comment_uids()
-        self.comment_journal.retire_unconfigured_owners(uids, now)
+        self.comment_journal.retire_unconfigured_owners(self.configured_comment_uids(), now)
         for uid in uids:
             if not self.comment_journal.catalog_refresh_due(uid, now, COMMENT_RESOURCE_REFRESH_INTERVAL_SECONDS):
                 continue
@@ -308,19 +315,39 @@ class PushFeature:
     async def author_profile(self, uid: str, fallback: BilibiliAuthorCardProfile | None = None
                              ) -> BilibiliAuthorCardProfile:
         cached = self.profiles.get(uid)
-        if cached is not None and time.time() - cached.fetched_at < PROFILE_TTL_SECONDS:
+        if cached is not None:
+            # A stale profile still draws the card; the refresh runs beside it, as upstream does.
+            if time.time() - cached.fetched_at >= PROFILE_TTL_SECONDS and uid not in self._profile_refreshes:
+                task = asyncio.create_task(self.refresh_profile(uid))
+                self._profile_refreshes[uid] = task
+                task.add_done_callback(lambda done, uid=uid: self._finish_profile_refresh(uid, done))
             return cached
         try:
-            profile = await asyncio.wait_for(self.gateway.get_user_card_profile(uid), PROFILE_TIMEOUT_SECONDS)
+            return await asyncio.wait_for(self.refresh_profile(uid, fallback), PROFILE_TIMEOUT_SECONDS)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            return fallback or BilibiliAuthorCardProfile(uid=uid)
+
+    def _finish_profile_refresh(self, uid: str, task: asyncio.Task) -> None:
+        self._profile_refreshes.pop(uid, None)
+        if not task.cancelled():
+            task.exception()   # Already reported in refresh_profile; the cached profile stays.
+
+    async def refresh_profile(self, uid: str, fallback: BilibiliAuthorCardProfile | None = None
+                              ) -> BilibiliAuthorCardProfile:
+        try:
+            profile = await self.gateway.get_user_card_profile(uid)
         except asyncio.CancelledError:
             raise
         except Exception as error:
             self.report(f'UP主 {uid} 资料', error)
-            return cached or fallback or BilibiliAuthorCardProfile(uid=uid)
-        previous = cached or fallback
+            raise
+        previous = self.profiles.get(uid) or fallback
         if previous is not None:
             profile = replace(profile, name=previous.name if profile.name in {'', uid} and previous.name else profile.name,
-                              avatar_url=profile.avatar_url or previous.avatar_url)
+                              avatar_url=profile.avatar_url or previous.avatar_url,
+                              pendant_url=profile.pendant_url or previous.pendant_url)
         self.profiles[uid] = profile
         await self.ctx.set_kv('profiles', {key: asdict(value) for key, value in self.profiles.items()})
         return profile
@@ -341,6 +368,7 @@ class PushFeature:
         return await self.deliver(scene, parts, at_all=at_all)
 
     async def deliver(self, scene: str, parts: list, *, at_all: bool = False) -> Sent:
+        at_all = at_all and not scene.startswith('telegram:')
         sent = await self.ctx.send_parts(scene, [Mention('all'), *parts] if at_all else parts)
         if sent.status == 'failed' and at_all:
             # The group may forbid @全体 or have used up today's count; send the card without it.

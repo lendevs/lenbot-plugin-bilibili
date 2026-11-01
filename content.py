@@ -5,7 +5,7 @@ from typing import Annotated, Literal
 from pydantic import Field
 
 from len_bot.plugin import PluginContext, Invocation, tool
-from .requests import VideoRequest, AccountReadRequest, AccountWriteRequest
+from .requests import VideoRequest, AccountReadRequest
 from .account import Account
 from .client import Client
 from .protocol import Comments, Feed, Player, SearchPage, Subtitle, Video
@@ -16,33 +16,20 @@ class ContentFeature:
         c=ctx.config
         if not math.isfinite(c['request_timeout_seconds']) or c['request_timeout_seconds']<=0:
             raise ValueError('request_timeout_seconds必须为有限正数')
-        if c['max_subtitle_bytes']<=0 or c['account_uid']<0 or min(c['daily_like_limit'],c['daily_favorite_limit'])<0:
-            raise ValueError('max_subtitle_bytes必须正数；account_uid/每日写次数不能负数')
-        for key in ('sessdata','bili_jct','buvid3'):
+        if c['max_subtitle_bytes']<=0 or c['account_uid']<0:
+            raise ValueError('max_subtitle_bytes必须正数；account_uid不能负数')
+        for key in ('sessdata','buvid3'):
             if any(char in c[key] for char in '\r\n;'):
                 raise ValueError(f'{key}不能含换行或Cookie分隔符')
-        if c['bili_jct'] and not re.fullmatch(r'[0-9a-fA-F]{32}',c['bili_jct']):
-            raise ValueError('bili_jct必须是32位十六进制CSRF值')
-        if any(not re.fullmatch(r'[1-9][0-9]*',value) for value in c['allowed_collection_ids']):
-            raise ValueError('allowed_collection_ids每项必须是完整正整数ID文本')
-        allowed={int(value) for value in c['allowed_collection_ids']}
-        if len(allowed)!=len(c['allowed_collection_ids']):raise ValueError('收藏夹ID不能重复')
-        enabled=c['account_read_enabled'] or c['daily_like_limit']>0 or c['daily_favorite_limit']>0
-        if enabled and (not c['account_uid'] or not c['sessdata']):raise ValueError('开启账号能力必须填account_uid和sessdata')
-        if (c['daily_like_limit']>0 or c['daily_favorite_limit']>0) and not c['account_read_enabled']:raise ValueError('写入需要开启account_read_enabled，以便独立核对结果')
-        if (c['daily_like_limit']>0 or c['daily_favorite_limit']>0) and not c['bili_jct']:raise ValueError('写入需要bili_jct')
-        if c['daily_like_limit']>0 and not c['buvid3']:raise ValueError('点赞需要明确buvid3')
-        if c['daily_favorite_limit']>0 and not allowed:raise ValueError('收藏写入需要allowed_collection_ids')
-        # Validate the quota clock before constructing HTTP resources.
-        from zoneinfo import ZoneInfo
-        ZoneInfo(c['quota_timezone'])
-        self.content_client=Client(c['request_timeout_seconds'],c['buvid3'],c['sessdata'],c['bili_jct'])
-        self.account=Account(ctx,self.content_client,allowed)
+        if c['account_read_enabled'] and (not c['account_uid'] or not c['sessdata']):
+            raise ValueError('开启账号能力必须填account_uid和sessdata')
+        self.content_client=Client(c['request_timeout_seconds'],c['buvid3'],c['sessdata'])
+        self.account=Account(ctx,self.content_client)
 
     async def _stop_content(self):await self.content_client.close()
 
-    @tool('bilibili_video', '按真实 BV/av 号读取视频元数据（含分 P/cid）或匿名评论；request.action 为 info 或 comments。'
-          '公开视频查询不使用登录态。', summary='查询 B 站视频信息或评论')
+    @tool('bilibili_video', '按 BV 号或 av 号查询 B 站公开视频，只返回数据，不用登录。request.action：'
+          'info 标题、简介、UP 主、统计和分 P 列表（含 cid）；comments 按热度排列的评论，每页 20 条。', summary='查询 B 站视频信息或评论')
     async def query_video(self, ctx: Invocation,
                           request: Annotated[VideoRequest, Field(description='公开视频元数据或评论请求')]) -> dict:
         values = request.model_dump(exclude={'action'})
@@ -50,9 +37,10 @@ class ContentFeature:
             return await self.video(ctx, **values)
         return await self.comments(ctx, **values)
 
-    @tool('bilibili_account_read', '按主人真实请求读取配置账号的评论、字幕、空间动态、近期点赞或收藏状态。'
-          'request.action 选择操作；字幕先省略 language 列轨道；动态 offset 原样传递。',
-          summary='由主人读取 B 站账号内容或状态', needs_source=True)
+    @tool('bilibili_account_read', '用插件配置的 B 站账号读取需要登录的内容，只有主人发起的请求能执行。request.action：'
+          'comments 登录后的视频评论；subtitles 视频字幕，先省略 language 列出字幕轨道，再按轨道的 lan 取正文；'
+          'dynamics 某个 UP 主的空间动态，翻页把上次的 offset 原样传回。',
+          summary='由主人读取 B 站账号内容', needs_source=True)
     async def read_account(self, ctx: Invocation,
                            request: Annotated[AccountReadRequest, Field(description='账号读取请求')]) -> dict:
         values = request.model_dump(exclude={'action'})
@@ -60,21 +48,7 @@ class ContentFeature:
             return await self.account_comments(ctx, **values)
         if request.action == 'subtitles':
             return await self.subtitles(ctx, **values)
-        if request.action == 'dynamics':
-            return await self.feed(ctx, **values)
-        if request.action == 'like_state':
-            return await self.like_state(ctx, **values)
-        return await self.favorite_state(ctx, **values)
-
-    @tool('bilibili_account_write', '按主人真实请求设置点赞或收藏目标状态；request.action 为 like 或 favorite。'
-          '各操作分别受配置额度限制，desired_state 设定目标状态；结果未知时先读取状态。',
-          summary='按主人要求设置 B 站点赞或收藏', needs_source=True)
-    async def write_account(self, ctx: Invocation,
-                            request: Annotated[AccountWriteRequest, Field(description='目标点赞或收藏状态')]) -> dict:
-        values = request.model_dump(exclude={'action'})
-        if request.action == 'like':
-            return await self.like(ctx, **values)
-        return await self.favorite(ctx, **values)
+        return await self.feed(ctx, **values)
 
     async def video(
         self,
@@ -85,7 +59,8 @@ class ContentFeature:
         result=await self.content_client.query('/x/web-interface/view',Video,identifier(bvid,aid))
         return result.output('公开视频元数据（标题、简介、分P等文字信息）。')
 
-    @tool('search_bilibili', 'WBI视频搜索，page为源站页码，整页返回；需要配置buvid3', summary='按关键词搜索 B 站视频')
+    @tool('search_bilibili', '按关键词搜索 B 站视频，返回一整页结果，只返回数据。page 是页码，从 1 开始。',
+          summary='按关键词搜索 B 站视频')
     async def search(
         self,
         ctx: Invocation,
@@ -95,11 +70,11 @@ class ContentFeature:
         ],
         page: Annotated[
             int,
-            Field(description='源站页码，从 1 开始；续页使用上次返回的 next_page', ge=1),
+            Field(description='页码，从 1 开始；续页用上次结果的 next_page', ge=1),
         ] = 1,
         order: Annotated[
             Literal['totalrank', 'click', 'pubdate', 'dm', 'stow', 'scores'],
-            Field(description='源站视频搜索排序方式'),
+            Field(description='totalrank 综合、click 播放最多、pubdate 最新发布、dm 弹幕最多、stow 收藏最多、scores 评论最多'),
         ] = 'totalrank',
     ) -> dict:
         if not keyword.strip():raise ValueError('关键词不能为空')
@@ -178,41 +153,6 @@ class ContentFeature:
         self.account.require(ctx);await self.account.verify()
         result=await self.content_client.query('/x/polymer/web-dynamic/v1/feed/space',Feed,{'host_mid':mid,'offset':offset},account=True)
         return result.output('源页中的动态/转发描述、图文摘要和视频简介；未读取图片像素、视频或完整专栏。')
-
-    async def like_state(
-        self,
-        ctx: Invocation,
-        aid: int,
-    ) -> dict:
-        identifier(None,aid);self.account.require(ctx);await self.account.verify()
-        return await self.account.like_state(aid)
-
-    async def favorite_state(
-        self,
-        ctx: Invocation,
-        aid: int,
-    ) -> dict:
-        identifier(None,aid);self.account.require(ctx);await self.account.verify()
-        return (await self.account.folders(aid)).output('真实账号收藏夹状态，不修改收藏。')
-
-    async def like(
-        self,
-        ctx: Invocation,
-        aid: int,
-        desired_state: bool,
-    ) -> dict:
-        identifier(None,aid)
-        return await self.account.write(ctx,'like',aid,desired_state)
-
-    async def favorite(
-        self,
-        ctx: Invocation,
-        aid: int,
-        collection_id: int,
-        desired_state: bool,
-    ) -> dict:
-        identifier(None,aid)
-        return await self.account.write(ctx,'favorite',aid,desired_state,collection_id)
 
 
 def identifier(bvid:str|None,aid:int|None)->dict:

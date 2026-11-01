@@ -29,7 +29,6 @@ CONTENT_RECENT_IDS_LIMIT = 20
 RECENT_NOTIFICATION_WINDOW_SECONDS = 5 * 60
 BILIBILI_CREDENTIAL_FIELDS = (
     "sessdata",
-    "bili_jct",
     "buvid3",
     "buvid4",
     "dedeuserid",
@@ -495,19 +494,7 @@ class BilibiliGateway:
     async def get_user_card_profile(self, uid: str) -> BilibiliAuthorCardProfile:
         normalized_uid = normalize_bilibili_uid(uid)
         user_obj = self._new_user(normalized_uid)
-        responses = await asyncio.gather(
-            user_obj.get_user_info(),
-            user_obj.get_relation_info(),
-            user_obj.get_up_stat(),
-            return_exceptions=True,
-        )
-        errors = [item for item in responses if isinstance(item, Exception)]
-        if len(errors) == len(responses):
-            raise errors[0]
-
-        info = responses[0] if isinstance(responses[0], dict) else {}
-        relation = responses[1] if isinstance(responses[1], dict) else {}
-        up_stat = responses[2] if isinstance(responses[2], dict) else {}
+        info = await user_obj.get_user_info()
         pendant = info.get("pendant") if isinstance(info.get("pendant"), dict) else {}
         name = next(
             (
@@ -524,11 +511,6 @@ class BilibiliGateway:
             pendant_url=_normalize_url(
                 pendant.get("image") or pendant.get("image_enhance") or ""
             ),
-            total_likes=_optional_non_negative_int(
-                up_stat.get("likes")
-            ),
-            following=_optional_non_negative_int(relation.get("following")),
-            follower=_optional_non_negative_int(relation.get("follower")),
             fetched_at=int(time.time()),
         )
 
@@ -2306,12 +2288,3 @@ def _safe_int(value: Any) -> int:
         return int(value)
     except (TypeError, ValueError):
         return 0
-
-
-def _optional_non_negative_int(value: Any) -> Optional[int]:
-    if value is None or value == "":
-        return None
-    try:
-        return max(0, int(value))
-    except (TypeError, ValueError):
-        return None

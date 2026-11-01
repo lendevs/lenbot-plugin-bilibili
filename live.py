@@ -1,17 +1,14 @@
 """Live rooms: observe real sessions; a new session sends a live card, and both changes become scene events."""
 
 import asyncio
-from typing import Annotated
-from pydantic import Field
 from datetime import datetime
-import json
 import math
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 import httpx
 
-from len_bot.plugin import Image, Invocation, PluginContext, Text, background, tool
+from len_bot.plugin import Image, Invocation, PluginContext, Text, background
 from .live_protocol import Sample, Subscription, parse_room, subscriptions
 from .push_card import Post, render_post
 

@@ -1,3 +1,4 @@
-bilibili_video：info 返回视频元数据及分P/cid，comments 匿名读评论；search_bilibili 搜索。BV/aid 二选一，页码用 next_page 续页。
-bilibili_monitor：status 新读取直播状态，subscriptions/follows 查本群配置与旧样本。
-bilibili_account_read/write 需要主人真实请求的 source_message_id。读取可选 comments/subtitles/dynamics/like_state/favorite_state；字幕先不填 language 列轨道，再按真实 lan 取正文，动态 offset 原样续页。写入用 like/favorite 和明确 desired_state，各自受配置额度限制。结果未知时先查状态。
+查询工具只返回数据，不发消息：bilibili_video 查公开视频，search_bilibili 搜视频，bilibili_monitor 查本群订阅。
+
+- 视频用 bvid 或 aid 二选一；评论翻页用上次结果的 next_page。
+- bilibili_account_read 用配置的账号读取需要登录的内容，只接受主人发起的请求。读字幕先不填 language 列出轨道，再按轨道的 lan 取正文；空间动态翻页把 offset 原样传回。

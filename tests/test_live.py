@@ -80,8 +80,7 @@ async def test_room_can_mention_everyone_on_new_session(source):
 async def test_telegram_groups_get_the_card_without_mentioning_everyone(source):
     source.json("/room", room(0))
     rooms = [{**config(source)["rooms"][0], "scenes": [SCENE, TELEGRAM], "at_all": True}]
-    async with PluginTest(PACKAGE, config={**config(source), "rooms": rooms}, scenes=(SCENE, TELEGRAM),
-                          bots={"telegram": "telegram:7001"}) as bot:
+    async with PluginTest(PACKAGE, config={**config(source), "rooms": rooms}, scenes=(SCENE, TELEGRAM)) as bot:
         await first_poll(bot)
         plugin = bot.host.plugins["bilibili"]
         source.json("/room", room(1, "2026-10-05 20:00:00"))

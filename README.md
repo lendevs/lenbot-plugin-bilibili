@@ -1,8 +1,8 @@
 # lenbot-plugin-bilibili
 
-LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两部分：
+LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含三部分：
 
-- **视频内容**：公开视频、分P、WBI 搜索、评论；主人明确请求的字幕、空间动态、点赞收藏状态和设定状态。账号能力默认关闭。
+- **视频内容**：公开视频、分P、WBI 搜索、评论；主人明确请求的字幕和空间动态。账号能力默认关闭。
 - **直播监测**：每 30 秒观察订阅的直播间。开播时向群里发开播卡片，开播／下播变化同时进入场景事件，由大脑决定是否再回应。
 - **关注推送**：关注的 UP 主发了新动态、新视频，或本人在自己的动态和视频下发表／回复评论，就以卡片推送到订阅的群。
 
@@ -43,7 +43,7 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 - `plugins.bilibili_content` 的全部字段原样移到 `plugins.bilibili`。
 - `plugins.bilibili_live.rooms` 移到 `plugins.bilibili.rooms`；`api_url` 改名 `live_api_url`，`source_timezone` 改名 `live_source_timezone`；`request_timeout_seconds` 两部分共用一个。
 - 场景 `plugins` 列表里的 `bilibili_content`、`bilibili_live` 换成 `bilibili`。
-- 旧数据目录里只有 `bilibili_content/write-counts.json` 需要移到新插件数据目录 `bilibili/`；直播监测不保存数据。
+- 直播监测在启动后重新建立基线。
 
 ## 直播监测
 
@@ -81,19 +81,20 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 
 - 公共视频／分P 不需要账号；搜索需要真实 `buvid3`。
 - 登录态读取需要开启 `account_read_enabled` 并填写 `account_uid`、`sessdata`。
-- 点赞／收藏还需要相应 `daily_*_limit` 大于 0 和 `bili_jct`；点赞需要 `buvid3`，收藏需要完整收藏夹 ID 允许列表。写入也要求开启读取，以便结果未知时独立核对。
 
 工具：
 
 - `bilibili_video`：request.action=info 读元数据及分P，comments 匿名读评论。
 - `search_bilibili`：视频搜索，来源页码与 next_page 原样续页。
 - `bilibili_monitor`：status 新读取当前直播状态，subscriptions/follows 读取本群配置与旧样本。
-- `bilibili_account_read`：request.action 为 comments、subtitles、dynamics、like_state、favorite_state；需要真实 source_message_id 和账号读取开关。字幕先列实际轨道再取正文。
-- `bilibili_account_write`：request.action 为 like/favorite；desired_state 明确设置或取消，收藏需要 collection_id。两个动作分别受配置额度限制，结果未知时先查询状态。
+- `bilibili_account_read`：request.action 为 comments、subtitles、dynamics；需要真实 source_message_id 和账号读取开关。字幕先列实际轨道再取正文。
 
-共五项能力。request 按 action 校验，只接受当前操作的字段；source_message_id 放在 request 外由宿主解析。授权按 source_message_id 对应消息的发送者判断。
+共四项能力。request 按 action 校验，只接受当前操作的字段；source_message_id 放在 request 外由宿主解析。授权按 source_message_id 对应消息的发送者判断。
 
-同一账号的写入在插件内串行执行。插件数据目录的 `write-counts.json` 只保存账号、日期和两种动作的写尝试次数，在发请求前写入；结果未知或取消也计一次。日额度按 `quota_timezone` 计算，所有群共用。计数文件损坏直接报错。不要让多个进程共用同一插件数据目录。
+
+## 从 1.1.x 更新
+
+配置中删除 `bili_jct`、`daily_like_limit`、`daily_favorite_limit`、`allowed_collection_ids` 和 `quota_timezone`。角色工具名单移除 `bilibili_account_write`，保留 `bilibili_video`、`search_bilibili`、`bilibili_account_read`、`bilibili_monitor` 以及 `tool_search`。旧数据文件 `write-counts.json` 可删除。
 
 ## 开发
 
@@ -103,7 +104,7 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 uv run --project ../LenBot --no-sync pytest -q
 ```
 
-测试用本地 HTTP 服务模拟直播间接口和图片，用 `tests/fake_sdk.py` 替换 bilibili-api-python（录制的真实空间动态页在 `tests/data/`），本机不用安装 SDK 就能运行。
+测试使用本地 HTTP 服务模拟源站，普通用例用 `tests/fake_sdk.py` 替换 SDK；`test_sdk_protocol.py` 使用清单固定的真实 SDK 验证 HTTP 协议。运行前安装 `plugin.toml` 的 dependencies：`uv pip install --python ../LenBot/.venv/bin/python bilibili-api-python==17.4.1`。
 
 许可证：GNU AGPL v3 或更新版本，见 [LICENSE](LICENSE)；协议来源见 [SOURCE.md](SOURCE.md)。
 

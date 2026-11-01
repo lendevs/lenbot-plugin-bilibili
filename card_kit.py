@@ -9,7 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from functools import lru_cache
 from io import BytesIO
-import math
 from pathlib import Path
 from typing import Sequence
 import unicodedata
@@ -254,24 +253,51 @@ def circle(image: Image.Image, size: int) -> Image.Image:
     return out
 
 
+# lenbot-mark.svg in its viewBox "8 4 80 80": a speech bubble with a curl on top, two eyes and a smile.
+# Segments are Bézier control points; a straight edge is a two-point segment.
+_MARK_CURL = (((47, 27), (44, 18), (47, 11), (55, 9)), ((55, 9), (61, 8), (64, 13), (60, 16)),
+              ((60, 16), (57, 17.5), (55.5, 14.5), (58.5, 12.5)))
+_MARK_BUBBLE = (((48, 26), (67, 26), (79, 37), (79, 51)), ((79, 51), (79, 65), (67, 76), (48, 76)),
+                ((48, 76), (44.5, 76), (41, 75.5), (38, 74.6)), ((38, 74.6), (22, 81)), ((22, 81), (26, 69)),
+                ((26, 69), (20, 64.5), (17, 58), (17, 51)), ((17, 51), (17, 37), (29, 26), (48, 26)))
+_MARK_SMILE = (((42.5, 62), (45.25, 65), (48, 62)), ((48, 62), (50.75, 65), (53.5, 62)))
+_MARK_EYES = ((35, 43), (54, 43))
+_MARK_FACE = "#2a2530"
+
+
+def _bezier(segments, steps: int = 24) -> list[tuple[float, float]]:
+    points: list[tuple[float, float]] = []
+    for control in segments:
+        for i in range(0 if not points else 1, steps + 1):
+            t = i / steps
+            level = list(control)
+            while len(level) > 1:   # de Casteljau
+                level = [(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t) for a, b in zip(level, level[1:])]
+            points.append(level[0])
+    return points
+
+
 def draw_mark(canvas: Image.Image, x: int, y: int, size: int, color: str = BRAND) -> None:
-    """The LenBot signal mark (lenbot-mark.svg): a dot, an inner arc to the upper right, an outer arc to the lower left."""
+    """The LenBot mark (lenbot-mark.svg), drawn supersampled and scaled down to size x size."""
     scale = 6
     layer = Image.new("RGBA", (size * scale, size * scale), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
-    unit = size * scale / 96
-    stroke = max(1, round(7 * unit))
-    centre = 48 * unit
-    # SVG arcs: radius 20 from the top (-110°) clockwise to the right (0°); radius 34 from 70° clockwise to the left (180°).
-    for radius, start, end in ((20, -110, 0), (34, 70, 180)):
-        r = radius * unit
-        outer = r + stroke / 2   # Pillow strokes inward from the box; the SVG radius is the stroke centre.
-        d.arc((centre - outer, centre - outer, centre + outer, centre + outer), start, end, fill=color, width=stroke)
-        for angle in (start, end):
-            cx = centre + r * math.cos(math.radians(angle))
-            cy = centre + r * math.sin(math.radians(angle))
-            d.ellipse((cx - stroke / 2, cy - stroke / 2, cx + stroke / 2, cy + stroke / 2), fill=color)
-    d.ellipse((centre - 8 * unit, centre - 8 * unit, centre + 8 * unit, centre + 8 * unit), fill=color)
+    unit = size * scale / 80
+    at = lambda p: ((p[0] - 8) * unit, (p[1] - 4) * unit)
+
+    def stroke(segments, width: float, fill: str) -> None:
+        points = [at(p) for p in _bezier(segments)]
+        w = max(1, round(width * unit))
+        d.line(points, fill=fill, width=w, joint="curve")
+        for px_, py_ in (points[0], points[-1]):
+            d.ellipse((px_ - w / 2, py_ - w / 2, px_ + w / 2, py_ + w / 2), fill=fill)
+
+    stroke(_MARK_CURL, 5, color)
+    d.polygon([at(p) for p in _bezier(_MARK_BUBBLE)], fill=color)
+    for ex, ey in _MARK_EYES:
+        left, top = at((ex, ey))
+        d.rounded_rectangle((left, top, left + 7 * unit, top + 14 * unit), radius=3.5 * unit, fill=_MARK_FACE)
+    stroke(_MARK_SMILE, 3, _MARK_FACE)
     canvas.alpha_composite(layer.resize((size, size), Image.Resampling.LANCZOS), (x, y))
 
 

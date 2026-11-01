@@ -42,12 +42,12 @@ def sign(params: dict, img_url: str, sub_url: str, timestamp: int) -> dict:
 
 
 class Client:
-    def __init__(self, timeout: float, buvid3: str, sessdata: str, bili_jct: str) -> None:
+    def __init__(self, timeout: float, buvid3: str, sessdata: str) -> None:
         headers = {'User-Agent': USER_AGENT, 'Referer': 'https://www.bilibili.com/'}
         self.public = httpx.AsyncClient(timeout=timeout, trust_env=False, follow_redirects=False, headers=headers)
         self.account = httpx.AsyncClient(timeout=timeout, trust_env=False, follow_redirects=False, headers=headers)
         self.media = httpx.AsyncClient(timeout=timeout, trust_env=False, follow_redirects=False, headers=headers)
-        self.buvid3, self.sessdata, self.bili_jct = buvid3, sessdata, bili_jct
+        self.buvid3, self.sessdata = buvid3, sessdata
         self.keys: tuple[float, Nav] | None = None
         self.key_lock = asyncio.Lock()
 
@@ -56,16 +56,15 @@ class Client:
         await self.account.aclose()
         await self.media.aclose()
 
-    async def _wire(self, path: str, params: dict | None = None, *, account: bool = False, form: dict | None = None):
+    async def _wire(self, path: str, params: dict | None = None, *, account: bool = False):
         client = self.account if account else self.public
         cookies = {}
         if self.buvid3: cookies['buvid3'] = self.buvid3
         if account:
             cookies['SESSDATA'] = self.sessdata
-            if form is not None: cookies['bili_jct'] = self.bili_jct
         # Explicit Cookie prevents a Set-Cookie response from changing configured credentials on later calls.
         headers = {'Cookie': '; '.join(f'{key}={value}' for key,value in cookies.items())}
-        async with client.stream('POST' if form is not None else 'GET', API + path, params=params, data=form, headers=headers) as response:
+        async with client.stream('GET', API + path, params=params, headers=headers) as response:
             raw = await read_body(response, 4_000_000)
             if response.status_code != 200:
                 raise RuntimeError(f'{response.url} HTTP {response.status_code}: {raw[:600]!r}')
@@ -92,12 +91,6 @@ class Client:
         if envelope.code != 0:
             raise ValueError(f'B站 code={envelope.code}: {envelope.message}; original={raw[:600]!r}')
         return Result(parse(envelope.data, model, raw), url, datetime.now(timezone.utc).isoformat())
-
-    async def write(self, path: str, form: dict) -> dict:
-        envelope, _, url = await self._wire(path, account=True, form={**form,'csrf':self.bili_jct})
-        return {'status': 'acknowledged' if envelope.code == 0 else 'platform_error',
-                'code': envelope.code, 'message': envelope.message, 'source': url,
-                'note': '平台业务回执；非零码是平台报告的错误，最终状态用读取接口确认。'}
 
     async def subtitle(self, url: str, limit: int) -> bytes:
         if url.startswith('//'):url = 'https:' + url

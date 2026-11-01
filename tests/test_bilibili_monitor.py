@@ -3,7 +3,6 @@ import copy
 import json
 import types
 import unittest
-from dataclasses import replace
 from dataclasses import fields as dataclass_fields
 from unittest.mock import patch
 
@@ -786,7 +785,7 @@ class BilibiliParsingTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             asyncio.run(gateway.get_video_engagement_stats("BV1SdXWB2Enp"))
 
-    def test_get_user_card_profile_combines_three_user_apis(self) -> None:
+    def test_get_user_card_profile_reads_only_displayed_fields(self) -> None:
         class FakeUser:
             async def get_user_info(self):
                 return {
@@ -814,9 +813,6 @@ class BilibiliParsingTest(unittest.TestCase):
                 name="测试账号",
                 avatar_url="https://i.example/avatar.png",
                 pendant_url="https://i.example/pendant.png",
-                total_likes=18807000,
-                following=23,
-                follower=726000,
                 fetched_at=NOW_TS,
             ),
         )

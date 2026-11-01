@@ -4,7 +4,6 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue, TypeAdapter, model
 
 Positive = Annotated[int, Field(gt=0)]
 Count = Annotated[int, Field(ge=0)]
-Flag = Annotated[int, Field(ge=0, le=1)]
 
 
 class DTO(BaseModel):
@@ -120,24 +119,6 @@ class Cue(DTO):
 
 class Subtitle(DTO):
     body: list[Cue]
-
-
-class Folder(DTO):
-    id: Positive
-    mid: Positive
-    title: str
-    fav_state: Flag
-
-
-class Folders(DTO):
-    count: Count
-    folders: list[Folder] | None = Field(alias='list')
-
-
-class Counts(DTO):
-    model_config = ConfigDict(strict=True, extra='forbid')
-    like: Count = 0
-    favorite: Count = 0
 
 
 def parse[T](data: JsonValue, model: type[T], raw: bytes) -> T:

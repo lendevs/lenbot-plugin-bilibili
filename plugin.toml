@@ -1,5 +1,5 @@
 name = "bilibili"
-version = "1.1.3"
+version = "1.2.0"
 interface = 1
 permissions = ["send", "events"]
 requires_lenbot = ">=0.2,<1"
@@ -9,7 +9,7 @@ reload = "plugin"
 authors = ["LEN5010"]
 license = "AGPL-3.0-or-later"
 repository = "https://github.com/lendevs/lenbot-plugin-bilibili"
-description = "哔哩哔哩合集：公开视频/分P/WBI搜索/评论，主人明确授权的字幕、动态和固定点赞收藏动作；每30秒观察订阅直播间，开播推送卡片，开播/下播变化进入场景事件；关注UP主的新动态、新视频和本人评论推送卡片。"
+description = "哔哩哔哩合集：公开视频/分P/WBI搜索/评论，主人明确授权的字幕和动态；每30秒观察订阅直播间，开播推送卡片，开播/下播变化进入场景事件；关注UP主的新动态、新视频和本人评论推送卡片。"
 dependencies = ["bilibili-api-python==17.4.1"]
 
 [model]
@@ -142,7 +142,7 @@ label = "允许用账号读取"
 group = "B 站账号"
 type = "boolean"
 default = false
-description = "允许主人登录态读取。写入也必须开启，以便独立核对不确定的动作结果。"
+description = "允许主人使用配置的登录态读取评论、字幕和空间动态。"
 
 [config.account_uid]
 label = "账号 UID"
@@ -158,44 +158,9 @@ type = "secret"
 default = ""
 description = "主人账号SESSDATA，只发送给固定的B站API。"
 
-[config.bili_jct]
-label = "bili_jct"
-group = "B 站账号"
-type = "secret"
-default = ""
-description = "写操作CSRF值（32位十六进制）。"
-
 [config.buvid3]
 label = "buvid3"
 group = "B 站账号"
 type = "secret"
 default = ""
-description = "搜索和点赞使用的设备Cookie，由运营者填写。"
-
-[config.daily_like_limit]
-label = "每天点赞上限"
-group = "写操作额度"
-type = "integer"
-default = 0
-description = "同账号每天点赞/取消点赞写尝试上限；0关闭。结果未知和取消也计一次。"
-
-[config.daily_favorite_limit]
-label = "每天收藏上限"
-group = "写操作额度"
-type = "integer"
-default = 0
-description = "同账号每天加入/移出收藏夹的写尝试上限；0关闭。"
-
-[config.allowed_collection_ids]
-label = "允许写入的收藏夹 ID"
-group = "写操作额度"
-type = "string_list"
-default = []
-description = "允许写入的完整收藏夹ID，每行一个正整数文本；写前核对实际账号归属。"
-
-[config.quota_timezone]
-label = "额度时区"
-group = "写操作额度"
-type = "string"
-default = "Asia/Shanghai"
-description = "账号每日额度使用的时区，所有群共用。"
+description = "视频搜索使用的设备Cookie，由运营者填写。"
