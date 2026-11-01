@@ -11,6 +11,7 @@ from len_bot.plugin_testing import PluginTest
 
 PACKAGE = Path(__file__).parents[1]
 SCENE = "onebot:group:80001"
+TELEGRAM = "telegram:group:-1001234"
 
 
 def room(status: int, live_time: str = "0000-00-00 00:00:00") -> dict:
@@ -73,6 +74,22 @@ async def test_room_can_mention_everyone_on_new_session(source):
         source.json("/room", room(1, "2026-10-05 20:00:00"))
         await plugin.instance.poll(plugin.context)
         assert bot.deliveries[0].parts[0] == Mention("all")
+
+
+@pytest.mark.asyncio
+async def test_telegram_groups_get_the_card_without_mentioning_everyone(source):
+    source.json("/room", room(0))
+    rooms = [{**config(source)["rooms"][0], "scenes": [SCENE, TELEGRAM], "at_all": True}]
+    async with PluginTest(PACKAGE, config={**config(source), "rooms": rooms}, scenes=(SCENE, TELEGRAM),
+                          bots={"telegram": "telegram:7001"}) as bot:
+        await first_poll(bot)
+        plugin = bot.host.plugins["bilibili"]
+        source.json("/room", room(1, "2026-10-05 20:00:00"))
+        await plugin.instance.poll(plugin.context)
+        parts = {delivery.scene: delivery.parts for delivery in bot.deliveries}
+        assert parts[SCENE][0] == Mention("all")
+        assert parts[TELEGRAM][0].text == "嘉然 开播了" and isinstance(parts[TELEGRAM][1], Image)
+        assert "已向本群发出开播通知" in bot.events(TELEGRAM)[0]["content"]
 
 
 @pytest.mark.asyncio

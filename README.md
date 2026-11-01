@@ -18,16 +18,19 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
   "plugins": {
     "bilibili": {
       "rooms": [
-        {"uid": 100001, "room_id": 12345, "name": "填写真实主播名称", "scenes": ["onebot:group:10001"], "at_all": false}
+        {"uid": 100001, "room_id": 12345, "name": "填写真实主播名称", "scenes": ["onebot:group:10001", "telegram:group:-1001234567890"], "at_all": false}
       ],
       "follows": [
-        {"uid": 100001, "name": "备注名", "scenes": ["onebot:group:10001"], "dynamic": true, "video": true, "comment": false}
+        {"uid": 100001, "name": "备注名", "scenes": ["onebot:group:10001", "telegram:group:-1001234567890"], "dynamic": true, "video": true, "comment": false}
       ],
       "sessdata": "关注推送需要",
       "account_read_enabled": false
     }
   },
-  "scenes": {"onebot:group:10001": {"plugins": ["bilibili"]}}
+  "scenes": {
+    "onebot:group:10001": {"plugins": ["bilibili"]},
+    "telegram:group:-1001234567890": {"plugins": ["bilibili"]}
+  }
 }
 ```
 
@@ -50,7 +53,7 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含两�
 - 固定 30 秒周期，启动后立即采样；新进程每个房间第一个成功样本作为基线，停机期间的直播跳过。
 - 状态 1 才是正在直播，状态 2 是轮播。持续状态 1 但来源开播时间改变，视为新场次；从 1 变成 0／2 发下播事件。事件包含实际采样时间、标题、房号、UID 和链接，时间换算成本群时区。
 - 新场次先向每个群发一张开播卡片（主播头像、封面、标题、分区），再发场景事件，事件里写明卡片的实际发送状态。卡片画不出来时改发文字。下播只有场景事件。
-- `at_all` 默认关闭。打开后开播卡片前带 @全体成员；机器人不是管理员或当天次数用完导致发送失败时，去掉 @全体 再发一次。
+- `at_all` 默认关闭。打开后开播卡片前带 @全体成员：QQ 群需要机器人是管理员且当天还有次数，飞书群需要群设置允许，发送失败时去掉 @全体 再发一次；Telegram 没有全员提醒，只发卡片。
 - 某个房间采样失败只结束它本次采样并保留原始错误，其他房间继续；下一周期重新观察。相同场次只发一次事件。
 - 安静时段由宿主场景事件规则处理。
 
