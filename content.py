@@ -8,7 +8,7 @@ from len_bot.plugin import PluginContext, Invocation, tool
 from .requests import VideoRequest, AccountReadRequest
 from .account import Account
 from .client import Client
-from .protocol import Comments, Feed, Player, SearchPage, Subtitle, Video
+from .protocol import Comments, Feed, Player, SearchPage, Subtitle, UserSearchPage, Video
 
 
 class ContentFeature:
@@ -59,28 +59,41 @@ class ContentFeature:
         result=await self.content_client.query('/x/web-interface/view',Video,identifier(bvid,aid))
         return result.output('公开视频元数据（标题、简介、分P等文字信息）。')
 
-    @tool('search_bilibili', '按关键词搜索 B 站视频，返回一整页结果，只返回数据。page 是页码，从 1 开始。',
-          summary='按关键词搜索 B 站视频')
+    @tool('search_bilibili', '按关键词搜索 B 站，返回一整页结果，只返回数据。kind：video 搜视频；user 搜 UP 主，'
+          '结果里有 UID、粉丝数和直播间号，订阅前用它确认是哪位 UP 主。page 是页码，从 1 开始。',
+          summary='按关键词搜索 B 站视频或 UP 主')
     async def search(
         self,
         ctx: Invocation,
         keyword: Annotated[
             str,
-            Field(description='视频搜索关键词，不能全为空白', min_length=1),
+            Field(description='搜索关键词，不能全为空白', min_length=1),
         ],
+        kind: Annotated[
+            Literal['video', 'user'],
+            Field(description='video 搜视频，user 搜 UP 主'),
+        ] = 'video',
         page: Annotated[
             int,
             Field(description='页码，从 1 开始；续页用上次结果的 next_page', ge=1),
         ] = 1,
         order: Annotated[
             Literal['totalrank', 'click', 'pubdate', 'dm', 'stow', 'scores'],
-            Field(description='totalrank 综合、click 播放最多、pubdate 最新发布、dm 弹幕最多、stow 收藏最多、scores 评论最多'),
+            Field(description='只用于视频：totalrank 综合、click 播放最多、pubdate 最新发布、dm 弹幕最多、stow 收藏最多、scores 评论最多'),
         ] = 'totalrank',
     ) -> dict:
         if not keyword.strip():raise ValueError('关键词不能为空')
-        if not self.ctx.config['buvid3']:raise ValueError('搜索需要在根配置填写buvid3')
+        if kind == 'user':
+            result=await self.content_client.query('/x/web-interface/wbi/search/type',UserSearchPage,
+                                           {'search_type':'bili_user','keyword':keyword,'page':page},wbi=True,device=True)
+            users=[{'uid':user.mid,'name':strip_tags(user.uname),'fans':user.fans,'videos':user.videos,
+                    'sign':user.usign,'live_room_id':user.room_id or None,'live_now':user.is_live==1}
+                   for user in result.data.result]
+            return {'users':users,'source':result.url,'fetched_at':result.fetched_at,
+                    'note':'按源站相关度排列的 UP 主；live_room_id 为空表示没有开通直播间。',
+                    'next_page':result.data.page+1 if result.data.page<result.data.numPages else None}
         result=await self.content_client.query('/x/web-interface/wbi/search/type',SearchPage,
-                                       {'search_type':'video','keyword':keyword,'page':page,'order':order},wbi=True)
+                                       {'search_type':'video','keyword':keyword,'page':page,'order':order},wbi=True,device=True)
         return {**result.output('源搜索整页；标题里可能带源站的高亮标签。'),
                        'next_page':result.data.page+1 if result.data.page<result.data.numPages else None}
 
@@ -162,3 +175,7 @@ def identifier(bvid:str|None,aid:int|None)->dict:
         return {'bvid':bvid}
     if aid<=0:raise ValueError('aid必须为正整数')
     return {'aid':aid}
+
+
+def strip_tags(text: str) -> str:
+    return re.sub(r'<[^>]+>', '', text)

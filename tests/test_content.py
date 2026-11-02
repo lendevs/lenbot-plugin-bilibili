@@ -42,7 +42,8 @@ async def test_configuration_controls_discovery_and_preview_has_no_credentials()
         available = {item['name'] for item in preview.values() if not item['reasons']}
         assert {'bilibili_video', 'bilibili_monitor'} <= available
         assert set(preview) == {'bilibili_video', 'search_bilibili', 'bilibili_monitor',
-                                'bilibili_account_read'}
+                                'bilibili_account_read', 'bilibili_login', 'bilibili_subscription'}
+        assert 'search_bilibili' in available
         assert 'bilibili_account_read' not in available
         assert preview['bilibili_account_read']['reasons'] == ['账号读取未开启']
         for item in preview.values():

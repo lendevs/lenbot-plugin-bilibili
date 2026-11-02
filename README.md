@@ -1,6 +1,6 @@
 # lenbot-plugin-bilibili
 
-LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含三部分：
+LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。需要 LenBot 0.2.1。包含视频查询、直播提醒与关注推送：
 
 - **视频内容**：公开视频、分P、WBI 搜索、评论；主人明确请求的字幕和空间动态。账号能力默认关闭。
 - **直播监测**：每 30 秒观察订阅的直播间。开播时向群里发开播卡片，开播／下播变化同时进入场景事件，由大脑决定是否再回应。
@@ -62,11 +62,11 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含三�
 - `bilibili_monitor(request={"action": "status", "uid": ...})`：重新读取本群订阅对象的当前状态，请求失败就报原始错误。
 - `bilibili_monitor(request={"action": "subscriptions", "uid": ...})`：本群真实订阅、最近一次成功采样和最近一次失败。`last_sample` 是上次成功样本，当前状态用 status 重读。
 
-订阅由运营者在面板的 `rooms` 和场景启用名单中管理。
+主人可通过 `bilibili_subscription` 在当前群增删订阅，也可在面板编辑 `rooms`。同一 UID 的 `at_all` 与推送类型由订阅它的群共用，群列表分别保存。
 
 ## 关注推送
 
-`follows` 每项填写 UP 主 UID、要推送的群，以及动态、视频、评论三个开关（评论默认关）。有关注项时必须填写 `sessdata`：空间动态和评论接口未登录时会被风控拒绝。读取走 bilibili-api-python SDK（插件清单声明的唯一额外依赖），使用宿主已有的 httpx。
+`follows` 每项填写 UP 主 UID、要推送的群，以及动态、视频、评论三个开关（评论默认关）。有关注项时必须填写 `sessdata`：空间动态和评论接口未登录时会被风控拒绝。读取走 bilibili-api-python SDK，使用宿主已有的 httpx。
 
 - **动态和视频**：每个 UP 主每 `push_poll_seconds`（默认 300）秒读一次空间动态，多个 UP 主之间错开 20 秒。每个群各自记录推送进度，保存在插件 KV 里，重启后接着上次进度。新关注或停机很久后第一次读取，只推最近 5 分钟内发布的内容。转发动态把原动态画在灰色块里，直播预约画成附加块。
 - **评论**：只抓 UP 主本人在自己最近 3 条动态和 3 个视频下的评论和回复，别人的评论不推。评论记录、扫描进度和每个群的投递状态保存在插件数据目录的 `comments.sqlite3`。新资源第一次扫描只记录已有评论；之后的新评论发送失败会按退避时间重试，超过 24 小时的不再发。所有评论请求共用 `comment_request_seconds` 的最短间隔。
@@ -77,20 +77,28 @@ LenBot 插件接口 1 的哔哩哔哩合集，插件名 `bilibili`。包含三�
 
 ## 视频内容
 
-公共请求不带 SESSDATA。账号工具只接受根配置 `owners` 里的真实请求人，每次账号调用前查询 nav 核对真实 B 站 UID。凭据由运营者在面板填写和更新。
+公共请求不带 SESSDATA。账号工具只接受根配置 `owners` 里的真实请求人，每次账号调用前查询 nav 核对真实 B 站 UID。主人可以扫码登录，也可在面板填写和更新凭据。
 
-- 公共视频／分P 不需要账号；搜索需要真实 `buvid3`。
+- 公共视频、分 P 和搜索可直接使用；搜索设备 Cookie 自动获取，面板的 `buvid3` 可指定设备 Cookie。
 - 登录态读取需要开启 `account_read_enabled` 并填写 `account_uid`、`sessdata`。
 
 工具：
 
 - `bilibili_video`：request.action=info 读元数据及分P，comments 匿名读评论。
-- `search_bilibili`：视频搜索，来源页码与 next_page 原样续页。
+- `search_bilibili`：`kind=video` 搜视频，`kind=user` 搜 UP 主；结果含 UID、昵称和粉丝数，使用 `next_page` 续页。
 - `bilibili_monitor`：status 新读取当前直播状态，subscriptions/follows 读取本群配置与旧样本。
 - `bilibili_account_read`：request.action 为 comments、subtitles、dynamics；需要真实 source_message_id 和账号读取开关。字幕先列实际轨道再取正文。
 
-共四项能力。request 按 action 校验，只接受当前操作的字段；source_message_id 放在 request 外由宿主解析。授权按 source_message_id 对应消息的发送者判断。
+新增 `bilibili_login`（login/status）和 `bilibili_subscription`（live_add/live_remove/follow_add/follow_remove），共六项工具。request 按 action 校验，只接受当前操作的字段；source_message_id 放在 request 外由宿主解析。授权按 source_message_id 对应消息的发送者判断。
 
+
+## 在聊天中登录和订阅
+
+主人发送 `/B站登录`，或让 Bot 帮忙登录 B 站。插件把二维码发到当前聊天，3 分钟内用 B 站客户端扫码确认，登录成功后自动保存账号 UID、SESSDATA 并开启账号读取。`bilibili_login(action="status")` 查询账号和扫码进度。
+
+主人说订阅某位 UP 主时，Bot 用 `search_bilibili(kind="user", keyword="名字")` 查候选，确认 UID 后用 `bilibili_subscription` 保存当前群的订阅：`live_add` / `live_remove` 管理开播提醒，`follow_add` / `follow_remove` 管理动态、视频和评论推送。关注推送先扫码登录，新增订阅立即生效。查询现有订阅用 `bilibili_monitor`。这里的关注是插件订阅，保存在 LenBot 的配置中。
+
+角色的工具名单需加入 `bilibili_login`、`bilibili_subscription` 和 `tool_search`；使用 `tools: all` 时直接使用。
 
 ## 从 1.1.x 更新
 

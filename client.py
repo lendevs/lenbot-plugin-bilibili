@@ -10,13 +10,16 @@ from urllib.parse import quote, urlencode, urlsplit
 import httpx
 from pydantic import BaseModel
 
-from .protocol import Envelope, Nav, parse
+from .protocol import Envelope, Nav, Spi, parse
 
 API = 'https://api.bilibili.com'
+HOME = 'https://www.bilibili.com/'
 NAV = '/x/web-interface/nav'
+SPI = '/x/frontend/finger/spi'
+DEVICE_TTL_SECONDS = 86400
 MIXIN = (46,47,18,2,53,8,23,32,15,50,10,31,58,3,45,35,27,43,5,49,33,9,42,19,29,28,14,39,12,38,41,13,
          37,48,7,16,24,55,40,61,26,17,0,1,60,51,30,4,22,25,54,21,56,59,6,63,57,62,11,36,20,34,44,52)
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
 
 @dataclass(frozen=True)
@@ -50,15 +53,38 @@ class Client:
         self.buvid3, self.sessdata = buvid3, sessdata
         self.keys: tuple[float, Nav] | None = None
         self.key_lock = asyncio.Lock()
+        self.device: tuple[float, dict[str, str]] | None = None
+        self.device_lock = asyncio.Lock()
 
     async def close(self):
         await self.public.aclose()
         await self.account.aclose()
         await self.media.aclose()
 
-    async def _wire(self, path: str, params: dict | None = None, *, account: bool = False):
+    async def device_cookies(self) -> dict[str, str]:
+        """Visitor cookies the search API expects: buvid3 and b_nut from the home page, buvid4 from spi."""
+        async with self.device_lock:
+            if self.device is None or time.monotonic() >= self.device[0]:
+                async with self.media.stream('GET', HOME, headers={'Cookie': ''}) as response:
+                    await read_body(response, 4_000_000)
+                    if response.status_code != 200:
+                        raise RuntimeError(f'{HOME} HTTP {response.status_code}')
+                    home = {key: response.cookies[key] for key in ('buvid3', 'b_nut') if key in response.cookies}
+                if 'buvid3' not in home:
+                    raise ValueError('B站首页没有返回buvid3')
+                envelope, raw, _ = await self._wire(SPI, cookies=home)
+                if envelope.code != 0:
+                    raise ValueError(f'B站设备 Cookie code={envelope.code}: {envelope.message}')
+                spi = parse(envelope.data, Spi, raw)
+                self.device = (time.monotonic() + DEVICE_TTL_SECONDS, {**home, 'buvid4': spi.b_4})
+            cookies = dict(self.device[1])
+        if self.buvid3: cookies['buvid3'] = self.buvid3
+        return cookies
+
+    async def _wire(self, path: str, params: dict | None = None, *, account: bool = False,
+                    cookies: dict[str, str] | None = None):
         client = self.account if account else self.public
-        cookies = {}
+        cookies = dict(cookies or {})
         if self.buvid3: cookies['buvid3'] = self.buvid3
         if account:
             cookies['SESSDATA'] = self.sessdata
@@ -85,11 +111,17 @@ class Client:
             nav = self.keys[1]
         return sign(params, nav.wbi_img.img_url, nav.wbi_img.sub_url, int(time.time()))
 
-    async def query[T](self, path: str, model: type[T], params: dict | None = None, *, account: bool = False, wbi: bool = False) -> Result[T]:
+    async def query[T](self, path: str, model: type[T], params: dict | None = None, *, account: bool = False,
+                       wbi: bool = False, device: bool = False) -> Result[T]:
         if wbi: params = await self.wbi_params(params or {})
-        envelope, raw, url = await self._wire(path, params, account=account)
+        cookies = await self.device_cookies() if device else None
+        envelope, raw, url = await self._wire(path, params, account=account, cookies=cookies)
         if envelope.code != 0:
             raise ValueError(f'B站 code={envelope.code}: {envelope.message}; original={raw[:600]!r}')
+        if device and isinstance(envelope.data, dict) and 'v_voucher' in envelope.data:
+            # Risk control answered with a captcha voucher; the next request starts from new visitor cookies.
+            self.device = None
+            raise RuntimeError('B站这次要求人机验证，没有返回结果；稍后再试')
         return Result(parse(envelope.data, model, raw), url, datetime.now(timezone.utc).isoformat())
 
     async def subtitle(self, url: str, limit: int) -> bytes:
