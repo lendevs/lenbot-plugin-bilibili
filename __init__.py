@@ -1,5 +1,5 @@
-"""Bilibili collection: public video content, owner-authorized account reads, live-room scene events and
-cards for followed uploaders' dynamics, videos and comments."""
+"""Bilibili collection: video and UP 主 search, owner-authorized account reads, QR login, live-room scene events,
+cards for followed uploaders' dynamics, videos and comments, and subscriptions changed from chat."""
 
 from typing import Annotated
 from pydantic import Field
@@ -8,27 +8,34 @@ from .requests import MonitorRequest
 
 from .content import ContentFeature
 from .live import LiveFeature
+from .login import LoginFeature
+from .manage import ManageFeature
 from .push import PushFeature
 
 
-class Bilibili(PushFeature, LiveFeature, ContentFeature, Plugin):
+class Bilibili(ManageFeature, LoginFeature, PushFeature, LiveFeature, ContentFeature, Plugin):
     def __init__(self, ctx: PluginContext) -> None:
         super().__init__(ctx)
         self._init_content(ctx)
         self._init_live(ctx)
         self._init_push(ctx)
+        self._init_login(ctx)
+        self._init_manage(ctx)
 
     async def start(self) -> None:
         await self._start_push()
 
     async def stop(self) -> None:
         try:
-            await self._stop_push()
+            await self._stop_login()
         finally:
             try:
-                await self._stop_live()
+                await self._stop_push()
             finally:
-                await self._stop_content()
+                try:
+                    await self._stop_live()
+                finally:
+                    await self._stop_content()
 
     @tool('bilibili_monitor', '查询本群的 B 站订阅，只返回数据。request.action：status 现在去读订阅直播间的开播状态；'
           'subscriptions 本群的直播订阅设置和最近一次记录；follows 本群关注的 UP 主和推送开关。',
@@ -44,8 +51,6 @@ class Bilibili(PushFeature, LiveFeature, ContentFeature, Plugin):
     def unavailable_tools(self, scene: str) -> dict[str, str]:
         config = self.ctx.config
         unavailable = {}
-        if not config['buvid3']:
-            unavailable['search_bilibili'] = '视频搜索需要配置 buvid3'
         if not config['account_read_enabled']:
             unavailable['bilibili_account_read'] = '账号读取未开启'
         return unavailable

@@ -35,7 +35,9 @@ class Source:
     def __init__(self, url: str) -> None:
         self.url = url
         self.routes: dict[str, tuple[int, str, bytes]] = {}
+        self.headers: dict[str, list[tuple[str, str]]] = {}
         self.requests: list[tuple[str, dict[str, list[str]]]] = []
+        self.cookies: list[str] = []
 
     def json(self, path: str, value: object, status: int = 200) -> None:
         self.routes[path] = (status, "application/json", json.dumps(value, ensure_ascii=False).encode())
@@ -57,9 +59,12 @@ def source():
         def do_GET(self):
             url = urlsplit(self.path)
             holder["source"].requests.append((url.path, parse_qs(url.query)))
+            holder["source"].cookies.append(self.headers.get("Cookie", ""))
             status, content_type, body = holder["source"].route(url.path)
             self.send_response(status)
             self.send_header("Content-Type", content_type)
+            for name, value in holder["source"].headers.get(url.path, []):
+                self.send_header(name, value)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)

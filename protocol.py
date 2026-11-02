@@ -72,7 +72,36 @@ class SearchPage(DTO):
     pagesize: Positive
     numResults: Count
     numPages: Count
-    result: list[SearchVideo]
+    result: list[SearchVideo] = []
+
+
+class SearchUser(DTO):
+    mid: Positive
+    uname: str
+    usign: str
+    fans: Count
+    videos: Count
+    upic: str
+    room_id: Count = 0
+    is_live: Count = 0
+
+
+class UserSearchPage(DTO):
+    page: Positive
+    pagesize: Positive
+    numResults: Count
+    numPages: Count
+    result: list[SearchUser] = []
+
+
+class Spi(DTO):
+    b_3: str
+    b_4: str
+
+
+class LiveRoom(DTO):
+    roomStatus: Count
+    roomid: Count
 
 
 class CommentPage(DTO):
@@ -131,6 +160,18 @@ def parse[T](data: JsonValue, model: type[T], raw: bytes) -> T:
 class Identity(DTO):
     isLogin: bool
     mid: Positive | None = None
+    uname: str = ''
+
+
+class QrCode(DTO):
+    url: str
+    qrcode_key: str
+
+
+class QrPoll(DTO):
+    code: int
+    message: str
+    url: str = ''
 
 
 class Text(DTO):

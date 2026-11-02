@@ -57,6 +57,33 @@ class FollowSubscriptions(Request):
     action: Literal['follows']
 
 
+class LiveAdd(Request):
+    action: Literal['live_add']
+    uid: Annotated[int, Field(ge=1, description='UP 主的 B 站 UID，取自 search_bilibili 的 kind=user 结果')]
+    name: Annotated[str, Field(min_length=1, description='开播提醒里用的名字，一般取搜索结果的 name')]
+    at_all: Annotated[bool | None, Field(description='开播时是否 @全体成员；省略时新订阅为否，已有订阅保持不变')] = None
+
+
+class LiveRemove(Request):
+    action: Literal['live_remove']
+    uid: Annotated[int, Field(ge=1, description='要在本群取消开播提醒的 UP 主 UID')]
+
+
+class FollowAdd(Request):
+    action: Literal['follow_add']
+    uid: Annotated[int, Field(ge=1, description='UP 主的 B 站 UID，取自 search_bilibili 的 kind=user 结果')]
+    name: Annotated[str, Field(description='备注名，面板和查询里显示')] = ''
+    dynamic: Annotated[bool | None, Field(description='推送新动态；省略时新订阅为是，已有订阅保持不变')] = None
+    video: Annotated[bool | None, Field(description='推送新视频；省略时新订阅为是，已有订阅保持不变')] = None
+    comment: Annotated[bool | None, Field(description='推送 UP 主本人的评论；省略时新订阅为否，已有订阅保持不变')] = None
+
+
+class FollowRemove(Request):
+    action: Literal['follow_remove']
+    uid: Annotated[int, Field(ge=1, description='要在本群取消推送的 UP 主 UID')]
+
+
 VideoRequest = Annotated[VideoQuery | VideoComments, Field(discriminator='action')]
 AccountReadRequest = Annotated[AccountComments | VideoSubtitles | DynamicFeed, Field(discriminator='action')]
 MonitorRequest = Annotated[LiveStatus | LiveSubscriptions | FollowSubscriptions, Field(discriminator='action')]
+SubscriptionRequest = Annotated[LiveAdd | LiveRemove | FollowAdd | FollowRemove, Field(discriminator='action')]

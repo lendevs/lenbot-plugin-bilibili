@@ -144,4 +144,4 @@ class LiveFeature:
                           'last_poll_error': self.errors.get(item.room_id)})
         return {'scene': ctx.scene, 'rooms': items, 'interval_seconds': 30,
                            'notification': '变化发场景事件，由大脑决定回应；新进程的首个样本作为基线',
-                           'settings': '由运营者在插件面板修改根配置 plugins.bilibili.rooms 和场景启用名单，保存后重载插件生效。'}
+                           'settings': '主人在群里让 Bot 订阅或取消（bilibili_subscription），或在插件面板修改直播监测的直播间。'}

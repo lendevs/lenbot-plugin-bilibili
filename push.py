@@ -131,14 +131,20 @@ class PushFeature:
         self._reported: dict[str, float] = {}
         self._state_lock = asyncio.Lock()
         self._profile_refreshes: dict[str, asyncio.Task] = {}
+        self._content_started = False
 
     async def _start_push(self) -> None:
         self.push_state = await self.ctx.get_kv('push_state', {})
         self.profiles = {uid: BilibiliAuthorCardProfile(**value)
                          for uid, value in (await self.ctx.get_kv('profiles', {})).items()}
-        if any(item.dynamic or item.video for item in self.follows):
+        self._ensure_push_tasks()
+
+    def _ensure_push_tasks(self) -> None:
+        """Start the loops the current follows need; a follow added from chat may need one that was not running."""
+        if not self._content_started and any(item.dynamic or item.video for item in self.follows):
+            self._content_started = True
             self.ctx.start_task('动态轮询', self._content_loop())
-        if any(item.comment for item in self.follows):
+        if self.comment_journal is None and any(item.comment for item in self.follows):
             self.comment_journal = CommentJournal(self.ctx.data_dir / 'comments.sqlite3')
             self.comment_capture = CommentCaptureCoordinator(gateway=self.gateway, journal=self.comment_journal,
                                                              classify_error=classify, retry_policy=self.retry_policy)
@@ -485,7 +491,7 @@ class PushFeature:
         journal = None if self.comment_journal is None else {'pending_deliveries': self.comment_journal.pending_delivery_count()}
         return {'scene': ctx.scene, 'follows': items, 'interval_seconds': self.push_config.poll_interval_seconds,
                            'comment_journal': journal,
-                           'settings': '由运营者在插件面板修改 plugins.bilibili.follows，保存后重载插件生效。'}
+                           'settings': '主人在群里让 Bot 订阅或取消（bilibili_subscription），或在插件面板修改关注的 UP 主。'}
 
 
 def card_kind(notification: BilibiliNotification) -> str:
