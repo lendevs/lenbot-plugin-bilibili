@@ -14,6 +14,8 @@ from .push_card import Post, render_post
 
 STATUS = {0: '未开播', 1: '直播中', 2: '轮播中'}
 MAX_RESPONSE_BYTES = 1_000_000
+# Four samples long: a failed sample keeps the quiet, and it lapses on its own once sampling stops.
+QUIET_SECONDS = 120
 
 
 class LiveFeature:
@@ -95,6 +97,31 @@ class LiveFeature:
             except Exception as error:
                 self.errors[item.room_id] = {'at': ctx.now(), 'error': f'{type(error).__name__}: {error}'}
                 ctx.report_error(f'房间 {item.room_id} 采样', error)
+        await self.hold_quiet(ctx)
+
+    async def hold_quiet(self, ctx: PluginContext) -> None:
+        """Renew the quiet of groups with a live room that asks for it; lift it elsewhere.
+
+        A room whose last sample failed counts by its previous sample.
+        """
+        live: dict[str, str] = {}
+        watched: set[str] = set()
+        for item in self.rooms:
+            if item.quiet == 'off':
+                continue
+            sample = self.samples.get(item.room_id)
+            for scene in self.targets(item):
+                watched.add(scene)
+                if sample is not None and sample.room.live_status == 1:
+                    live[scene] = 'defer' if 'defer' in (item.quiet, live.get(scene)) else 'allow'
+        for scene in sorted(watched):
+            try:
+                if scene in live:
+                    await ctx.quiet(scene, QUIET_SECONDS, direct=live[scene])
+                else:
+                    await ctx.quiet(scene, None)
+            except Exception as error:
+                ctx.report_error(f'{scene} 直播期间安静', error)
 
     async def live_card(self, item: Subscription, sample: Sample) -> bytes:
         room = sample.room

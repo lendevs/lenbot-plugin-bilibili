@@ -1,8 +1,8 @@
 name = "bilibili"
-version = "1.3.0"
+version = "1.4.0"
 interface = 1
-permissions = ["send", "events", "configure"]
-requires_lenbot = ">=0.2.1,<1"
+permissions = ["send", "events", "configure", "quiet"]
+requires_lenbot = ">=0.2.4,<1"
 requires_python = ">=3.13"
 platforms = ["linux", "darwin"]
 reload = "plugin"
@@ -49,6 +49,17 @@ type = "boolean"
 label = "开播时 @全体成员"
 description = "QQ 群需要机器人是管理员且还有 @全体 次数，飞书群需要群设置允许，发送失败会去掉 @全体 再发一次；Telegram 没有全员提醒，只发卡片"
 default = false
+
+[config.rooms.fields.quiet]
+type = "string"
+label = "直播期间"
+description = "直播期间提醒的群里 Bot 是否主动插话，下播后照常聊天"
+default = "off"
+options = [
+  { value = "off", label = "照常聊天" },
+  { value = "allow", label = "不主动插话，被 @ 时回应" },
+  { value = "defer", label = "不主动插话，被 @ 时下播后回应" },
+]
 
 [config.follows]
 label = "关注的 UP 主"

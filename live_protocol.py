@@ -1,7 +1,7 @@
 """Typed public room samples; status 1 is live and status 2 is replay."""
 
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError, field_validator
@@ -17,6 +17,8 @@ class Subscription(BaseModel):
     name: str = Field(min_length=1)
     scenes: list[Scene] = Field(min_length=1)
     at_all: bool = False
+    # While the room is live its groups stay quiet: allow still answers @ and replies, defer waits until it ends.
+    quiet: Literal['off', 'allow', 'defer'] = 'off'
 
     @field_validator('scenes')
     @classmethod

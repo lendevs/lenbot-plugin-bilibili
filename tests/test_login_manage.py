@@ -136,17 +136,18 @@ async def test_live_subscription_added_and_removed_from_chat(source, monkeypatch
         assert [(item.uid, item.room_id, item.scenes) for item in plugin.rooms] == [
             (1, 10, [OTHER]), (672328094, 22637261, [SCENE])]
         assert bot.saved_config['rooms'][1] == {'uid': 672328094, 'room_id': 22637261, 'name': '嘉然',
-                                                'scenes': [SCENE], 'at_all': False}
+                                                'scenes': [SCENE], 'at_all': False, 'quiet': 'off'}
         again = json.loads(await bot.tool('bilibili_subscription', {'source_message_id': ask(bot), 'request': add}))
         assert again['changed'] is False
         shared = {'action': 'live_add', 'uid': 1, 'name': '已有', 'at_all': True}
         await bot.tool('bilibili_subscription', {'source_message_id': ask(bot), 'request': shared})
         assert bot.saved_config['rooms'][0] == {'uid': 1, 'room_id': 10, 'name': '已有', 'scenes': [OTHER, SCENE],
-                                                'at_all': True}
+                                                'at_all': True, 'quiet': 'off'}
         for uid in (672328094, 1):
             await bot.tool('bilibili_subscription', {'source_message_id': ask(bot),
                                                      'request': {'action': 'live_remove', 'uid': uid}})
-        assert bot.saved_config['rooms'] == [{'uid': 1, 'room_id': 10, 'name': '已有', 'scenes': [OTHER], 'at_all': True}]
+        assert bot.saved_config['rooms'] == [{'uid': 1, 'room_id': 10, 'name': '已有', 'scenes': [OTHER], 'at_all': True,
+                                                 'quiet': 'off'}]
         assert [item.uid for item in plugin.rooms] == [1]
         monitor = json.loads(await bot.tool('bilibili_monitor', {'request': {'action': 'subscriptions'}}))
         assert monitor['rooms'] == []

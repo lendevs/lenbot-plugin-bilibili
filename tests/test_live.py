@@ -65,6 +65,32 @@ async def test_session_start_and_end_become_scene_events(source):
 
 
 @pytest.mark.asyncio
+async def test_a_quiet_room_keeps_its_groups_quiet_while_live(source):
+    source.json("/room", room(0))
+    rooms = [{**config(source)["rooms"][0], "quiet": "defer"}]
+    async with PluginTest(PACKAGE, config={**config(source), "rooms": rooms}) as bot:
+        await first_poll(bot)
+        plugin = bot.host.plugins["bilibili"]
+        source.json("/room", room(1, "2026-10-05 20:00:00"))
+        await plugin.instance.poll(plugin.context)
+        # A failed sample keeps the last known status.
+        source.json("/room", {"code": -1}, status=500)
+        await plugin.instance.poll(plugin.context)
+        source.json("/room", room(2))
+        await plugin.instance.poll(plugin.context)
+        assert bot.quiets == [(SCENE, None, "allow"), (SCENE, 120, "defer"), (SCENE, 120, "defer"),
+                              (SCENE, None, "allow")]
+
+
+@pytest.mark.asyncio
+async def test_rooms_without_quiet_leave_the_group_alone(source):
+    source.json("/room", room(1, "2026-10-05 20:00:00"))
+    async with PluginTest(PACKAGE, config=config(source)) as bot:
+        await first_poll(bot)
+        assert bot.quiets == []
+
+
+@pytest.mark.asyncio
 async def test_room_can_mention_everyone_on_new_session(source):
     source.json("/room", room(0))
     rooms = [{**config(source)["rooms"][0], "at_all": True}]
