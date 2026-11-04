@@ -127,11 +127,12 @@ class LiveFeature:
         room = sample.room
         profile = await self.author_profile(str(item.uid))
         cover = room.user_cover or room.keyframe
-        pictures = await self.fetch_images([profile.avatar_url, cover])
+        pictures = await self.fetch_images([profile.avatar_url, profile.pendant_url, cover])
         post = Post(kind='live', author=item.name, avatar=pictures.get(profile.avatar_url),
                     published=sample.started_at.timestamp(), title=room.title, cover=pictures.get(cover),
                     meta=' · '.join(part for part in (room.parent_area_name, room.area_name) if part),
-                    url=sample.url.removeprefix('https://'), timezone=self.live_zone.key)
+                    url=sample.url.removeprefix('https://'), timezone=self.live_zone.key,
+                    pendant=pictures.get(profile.pendant_url), uid=str(item.uid))
         return await asyncio.to_thread(render_post, post, self.fonts)
 
     async def send_live_card(self, scene: str, item: Subscription, sample: Sample, card: bytes | None) -> str:

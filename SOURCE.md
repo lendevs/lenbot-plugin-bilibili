@@ -23,7 +23,7 @@
 - `push.py` 按 AstrBot 版 `asoul_bilibili_runtime.py` 的轮询、错误分类和投递顺序重写：投递目标从 AstrBot 消息来源换成 LenBot 场景，状态存插件 KV 和数据目录，@全体 由配置决定。
 - 依赖 `bilibili-api-python==17.4.1`（GPL-3.0-or-later），只用 httpx 客户端。`tests/data/dynamics.json` 是 2026-03-31 录制的公开空间动态页中的 3 条。
 
-## 卡片（card_kit.py、push_card.py、assets/font.ttf）
+## 卡片（card_kit.py、push_card.py、assets/NotoSansSC.ttf）
 
-- 版式按 LenBot 面板配色和标志重新设计，与 `lenbot-plugin-asoul` 各带一份。
-- `assets/font.ttf` 是更纱黑体 Sarasa Mono SC Light，取自 `astrbot_plugin_asoul/font.ttf`，按 SIL Open Font License 1.1 分发；粗体用同色描边模拟。
+- `push_card.py` 按仓库所有者的 `astrbot_plugin_asoul` 的 `templates/bilibili_card.html` 用 Pillow 重写，CSS 尺寸减半作为逻辑像素。`card_kit.py` 与 `lenbot-plugin-asoul`、`lenbot-plugin-group-digest` 共用同一份，三个仓库一起修改。
+- `assets/NotoSansSC.ttf` 为 Google Fonts 分发的 Noto Sans SC 可变字重字体，按 SIL Open Font License 1.1 分发，许可证见 `assets/NotoSansSC-OFL.txt`。

@@ -18,7 +18,7 @@ from PIL import Image as Picture, ImageOps
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
 
 from len_bot.plugin import Image, Invocation, Mention, PluginContext, Sent, Text
-from .card_kit import Fonts, Run
+from .card_kit import Run, load_fonts
 from .comment_capture import CommentCaptureCoordinator, CommentCaptureError, CommentRetryPolicy, CommentWorkScheduler
 from .comment_journal import CommentJournal
 from .gateway import (COMMENT_RESOURCE_REFRESH_INTERVAL_SECONDS, BilibiliAuthorCardProfile, BilibiliGateway,
@@ -28,12 +28,7 @@ from .push_card import KIND, ACTION, Note, Post, render_post
 Positive = Annotated[int, Field(gt=0)]
 Scene = Annotated[str, Field(pattern=r'^[a-z][a-z0-9_-]*:(group|private):[^:\s/\\]+$')]
 
-FONT = Path(__file__).parent / 'assets' / 'font.ttf'
-# Symbols and kaomoji the bundled font lacks; only fonts present on this machine are used.
-FALLBACK_FONTS = ('/Library/Fonts/Arial Unicode.ttf', '/System/Library/Fonts/Supplemental/Arial Unicode.ttf',
-                  '/System/Library/Fonts/Apple Symbols.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-                  '/usr/share/fonts/truetype/noto/NotoSansSymbols2-Regular.ttf',
-                  '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc')
+FONT = Path(__file__).parent / 'assets' / 'NotoSansSC.ttf'
 CONTENT_POLL_TIMEOUT_SECONDS = 90
 CATALOG_TIMEOUT_SECONDS = 30
 PROFILE_TTL_SECONDS = 6 * 3600
@@ -117,8 +112,7 @@ class PushFeature:
         self.comment_journal: CommentJournal | None = None
         self.retry_policy = CommentRetryPolicy(random_value=random.random)
         self.comment_scheduler = CommentWorkScheduler()
-        self.fonts = Fonts(FONT, FONT, fallbacks=tuple(Path(path) for path in FALLBACK_FONTS if Path(path).is_file()),
-                           fake_bold=True)
+        self.fonts = load_fonts(FONT)
         self.media_client = httpx.AsyncClient(timeout=config['request_timeout_seconds'], follow_redirects=True,
                                               trust_env=False, headers={
                                                   'User-Agent': 'Mozilla/5.0 LenBot-Bilibili/2.0',
@@ -412,10 +406,11 @@ class PushFeature:
         images = [] if forwarded is not None else notification.image_urls[:9]
         if kind == 'video':
             images = []
-        urls = [notification.author_profile.avatar_url, notification.cover_url, *images,
+        urls = [notification.author_profile.avatar_url, notification.author_profile.pendant_url, notification.cover_url, *images,
                 *(node.image_url for node in notification.rich_nodes if node.kind == 'emoji')]
         if forwarded is not None:
-            urls += [*forwarded.image_urls[:9], *(node.image_url for node in forwarded.rich_nodes if node.kind == 'emoji')]
+            urls += [forwarded.avatar_url, *forwarded.image_urls[:9],
+                     *(node.image_url for node in forwarded.rich_nodes if node.kind == 'emoji')]
         pictures = await self.fetch_images(urls)
         stats = {}
         if kind != 'comment':
@@ -430,7 +425,7 @@ class PushFeature:
             note = Note(card.subtitle or '预约', card.title)
         quoted = None
         if forwarded is not None:
-            quoted = Post(kind='dynamic', author=forwarded.author_name, avatar=None, published=0,
+            quoted = Post(kind='dynamic', author=forwarded.author_name, avatar=pictures.get(forwarded.avatar_url), published=0,
                           runs=runs(forwarded.rich_nodes, forwarded.text, pictures), title=forwarded.title,
                           images=[pictures[url] for url in forwarded.image_urls[:9] if pictures.get(url)],
                           timezone=self.push_timezone)
@@ -445,7 +440,8 @@ class PushFeature:
                     images=[pictures[url] for url in images if pictures.get(url)],
                     title=notification.title if kind == 'video' else '', cover=pictures.get(notification.cover_url),
                     stats=stats, quoted=quoted, note=note, action=notification.comment_action_text,
-                    url=notification.url.removeprefix('https://'), timezone=self.push_timezone)
+                    url=notification.url.removeprefix('https://'), timezone=self.push_timezone,
+                    pendant=pictures.get(notification.author_profile.pendant_url), uid=notification.uid)
 
     @property
     def push_timezone(self) -> str:

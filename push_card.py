@@ -1,21 +1,28 @@
-"""Bilibili push card: one layout for dynamics, videos, reposts, comments and live sessions."""
+"""Bilibili push card, ported from the HTML card of astrbot_plugin_asoul: the shared header, the post, then the footer.
+
+One layout carries dynamics, videos, reposts and live sessions. Comments use the template's shorter
+form: a line saying where the comment was left, the comment itself, and no footer.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
+import time
 from zoneinfo import ZoneInfo
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageOps
+import qrcode
 
-from .card_kit import (Card, Fonts, Run, Style, HOVER, MUTED, PAGE, PRIMARY, SUCCESS, SUCCESS_BG, TRACK,
-                       chip_width, circle, compact, cover, draw_chip, draw_lines, draw_text, footer, layout, line_height,
-                       measure, px, rounded, wrap)
+from .card_kit import (Card, Fonts, author_header, INK, INK_2, LABEL, LINK, MUTED, PICTURE_FILL, PINK, PINK_LINE, PINK_PALE,
+                       PINK_TEXT, QUOTE_BAR, QUOTE_FILL, QUOTE_LINE, RADIUS, Run, SURFACE, Style, chip_width, circle, clip,
+                       compact, cover, divider, draw_chip, draw_icon, draw_lines, draw_text, fill, fit, heading, layout,
+                       line_height, paragraph, px, qr_block, ramp, ring, rounded, signature, wrap)
 
 
 @dataclass
 class Note:
-    """A gray block under the body: the resource a comment belongs to, or a reservation attached to a dynamic."""
+    """A pink block under the body: the resource a comment belongs to, or a reservation attached to a dynamic."""
     label: str
     title: str
 
@@ -38,200 +45,276 @@ class Post:
     action: str = ""                # overrides the default verb, e.g. a reply instead of a comment
     url: str = ""
     timezone: str = "Asia/Shanghai"
+    pendant: Image.Image | None = None
+    uid: str = ""
 
 
-KIND = {"dynamic": "动态", "video": "视频", "repost": "转发", "live": "直播中", "comment": "评论"}
+KIND = {"dynamic": "动态", "video": "新视频", "repost": "转发", "live": "正在直播", "comment": "评论"}
 ACTION = {"dynamic": "发布了动态", "video": "投稿了视频", "repost": "转发了动态", "live": "开播了", "comment": "发表了评论"}
-BODY = Style(15.5)
+BODY = Style(17.5)
+BODY_RATIO = 1.66
 MAX_BODY_LINES = 36
+GRID_GAP = 6
+SINGLE_MAX_HEIGHT = 340
+CELL_HEIGHT = 155
 
 
 def when(timestamp: float, zone: str) -> str:
-    moment = datetime.fromtimestamp(timestamp, ZoneInfo(zone))
-    return f"{moment.month}月{moment.day}日 {moment:%H:%M}"
+    return datetime.fromtimestamp(timestamp, ZoneInfo(zone)).strftime("%Y-%m-%d %H:%M")
 
 
-def header(card: Card, post: Post) -> None:
-    fonts = card.fonts
-    size = px(44)
-
-    def paint(canvas, x, y, width):
-        if post.avatar is not None:
-            canvas.alpha_composite(circle(post.avatar, size), (x, y))
-        else:
-            ImageDraw.Draw(canvas).ellipse((x, y, x + size, y + size), fill=TRACK)
-        live = post.kind == "live"
-        chip_w = chip_width(fonts, KIND[post.kind], dot=live)
-        tx = x + size + px(12)
-        name_style = Style(16, bold=True)
-        name = wrap(fonts, post.author, name_style, width - (tx - x) - chip_w - px(12), max_lines=1)[0]
-        draw_text(canvas, fonts, tx, y + px(3), name, name_style)
-        action = post.action or ACTION[post.kind]
-        subtitle = f"{action} · {when(post.published, post.timezone)}" if post.published else action
-        draw_text(canvas, fonts, tx, y + px(26), subtitle, Style(12.5, color=MUTED))
-        draw_chip(canvas, fonts, x + width - chip_w, y + px(12), KIND[post.kind],
-                  SUCCESS if live else MUTED, SUCCESS_BG if live else HOVER, dot=SUCCESS if live else None)
-
-    card.add(size, paint, gap=0)
+def has_text(runs: list[Run]) -> bool:
+    return any(run.image is not None or run.text.strip() for run in runs)
 
 
-def clip(fonts: Fonts, lines: list, style: Style, width: int, limit: int) -> list:
-    """Keep at most ``limit`` lines; the last kept line ends with an ellipsis."""
-    if len(lines) <= limit:
-        return lines
-    lines = [list(line) for line in lines[:limit]]
-    ellipsis = measure(fonts, "…", style)
-    last = lines[-1]
-    while last and sum(unit[2] for unit in last) + ellipsis > width:
-        last.pop()
-    font = fonts.pick("…", style.size, style.bold)
-    last.append(("text", "…", font.getlength("…"), font))
-    return lines
-
-
-def rich_text(card: Card, runs: list[Run]) -> None:
-    if not any(run.image is not None or run.text.strip() for run in runs):
+def rich_text(card: Card, runs: list[Run], gap: float) -> None:
+    if not has_text(runs):
         return
     lines = clip(card.fonts, layout(card.fonts, runs, BODY, card.inner), BODY, card.inner, MAX_BODY_LINES)
-    card.add(len(lines) * line_height(BODY), lambda canvas, x, y, w: draw_lines(canvas, card.fonts, lines, x, y, BODY))
+    card.add(len(lines) * line_height(BODY, BODY_RATIO),
+             lambda canvas, x, y, w: draw_lines(canvas, card.fonts, lines, x, y, BODY, BODY_RATIO), gap=gap)
 
 
-def grid(count: int, width: int) -> tuple[int, int, int]:
-    """Columns and cell size; one image keeps a 4:3 frame, 2 and 4 use two columns, the rest three."""
-    gap = px(4)
-    if count == 1:
-        return 1, width, round(width * 3 / 4)
+def single_picture(image: Image.Image, width: int, limit: int) -> Image.Image:
+    """Full width when it fits; a tall picture stays whole on a quiet fill instead of being cropped."""
+    height = round(width * image.height / image.width)
+    if height <= limit:
+        return cover(image, width, height)
+    frame = Image.new("RGB", (width, limit), PICTURE_FILL)
+    fitted = ImageOps.contain(ImageOps.exif_transpose(image).convert("RGB"), (width, limit), Image.Resampling.LANCZOS)
+    frame.paste(fitted, ((width - fitted.width) // 2, 0))
+    return frame
+
+
+def grid_layout(count: int, width: int, cell_height: int) -> tuple[int, int, int]:
+    """Columns and cell size: 2 and 4 use two columns, the rest three, as the template's image grid does."""
     columns = 2 if count in (2, 4) else 3
-    cell = (width - gap * (columns - 1)) // columns
-    return columns, cell, cell
+    return columns, (width - px(GRID_GAP) * (columns - 1)) // columns, cell_height
 
 
-def paint_grid(canvas, images, x, y, columns, cell_w, cell_h, radius=8):
-    for index, image in enumerate(images):
-        r, c = divmod(index, columns)
-        canvas.alpha_composite(rounded(cover(image, cell_w, cell_h), radius),
-                               (x + c * (cell_w + px(4)), y + r * (cell_h + px(4))))
+def picture_block(images: list[Image.Image], width: int, single_limit: int, cell_height: int):
+    """(height, paint) for one picture or a grid."""
+    images = images[:9]
+    if len(images) == 1:
+        tile = rounded(single_picture(images[0], width, single_limit))
+        return tile.height, lambda canvas, x, y: canvas.alpha_composite(tile, (x, y))
+    columns, cell_w, cell_h = grid_layout(len(images), width, cell_height)
+    rows = -(-len(images) // columns)
+
+    def paint(canvas, x, y):
+        for index, image in enumerate(images):
+            r, c = divmod(index, columns)
+            canvas.alpha_composite(rounded(cover(image, cell_w, cell_h)),
+                                   (x + c * (cell_w + px(GRID_GAP)), y + r * (cell_h + px(GRID_GAP))))
+
+    return rows * cell_h + (rows - 1) * px(GRID_GAP), paint
 
 
-def image_grid(card: Card, images: list[Image.Image]) -> None:
+def pictures(card: Card, post: Post) -> None:
+    images = [post.cover] if post.kind in ("video", "live") and post.cover is not None else post.images
     if not images:
         return
-    images = images[:9]
-    columns, cell_w, cell_h = grid(len(images), card.inner)
-    rows = -(-len(images) // columns)
-    card.add(rows * cell_h + (rows - 1) * px(4),
-             lambda canvas, x, y, w: paint_grid(canvas, images, x, y, columns, cell_w, cell_h))
+    height, paint = picture_block(images, card.inner, px(SINGLE_MAX_HEIGHT), px(CELL_HEIGHT))
 
-
-def media(card: Card, post: Post) -> None:
-    fonts = card.fonts
-    width = card.inner
-    frame = round(width * 9 / 16)
-    title_style = Style(16, bold=True)
-    lines = wrap(fonts, post.title, title_style, width, max_lines=2) if post.title else []
-    step = px(25)
-    height = frame + (px(12) if lines else 0) + len(lines) * step + (px(20) if post.meta else 0)
-
-    def paint(canvas, x, y, _):
-        if post.cover is not None:
-            canvas.alpha_composite(rounded(cover(post.cover, width, frame), 8), (x, y))
-        else:
-            ImageDraw.Draw(canvas).rounded_rectangle((x, y, x + width, y + frame), radius=px(8), fill=TRACK)
+    def draw(canvas, x, y, width):
+        paint(canvas, x, y)
         if post.badge:
-            style = Style(12, bold=True, color="#ffffff")
-            w = chip_width(fonts, post.badge, style)
-            overlay = Image.new("RGBA", (w, px(22)), (0, 0, 0, 0))
-            ImageDraw.Draw(overlay).rounded_rectangle((0, 0, w - 1, px(22) - 1), radius=px(6), fill=(20, 20, 30, 165))
-            draw_text(overlay, fonts, w / 2, px(11), post.badge, style, anchor="mm")
-            canvas.alpha_composite(overlay, (x + width - w - px(10), y + frame - px(32)))
-        ty = y + frame + px(12)
-        for text in lines:
-            draw_text(canvas, fonts, x, ty, text, title_style)
-            ty += step
-        if post.meta:
-            draw_text(canvas, fonts, x, ty + px(2), post.meta, Style(12.5, color=MUTED))
+            style = Style(13, weight=700, color=SURFACE)
+            w = chip_width(card.fonts, post.badge, style, 9)
+            draw_chip(canvas, card.fonts, x + width - w - px(10), y + height - px(34), post.badge, SURFACE, INK, style=style,
+                      pad_x=9, height=24)
 
-    card.add(height, paint)
+    card.add(height, draw, gap=17)
+
+
+def title_block(card: Card, post: Post) -> None:
+    fonts = card.fonts
+    style = Style(19.5, weight=800)
+    lines = paragraph(fonts, post.title, style, card.inner, 3)
+    if lines:
+        card.add(len(lines) * line_height(style, 1.38),
+                 lambda canvas, x, y, w: draw_lines(canvas, fonts, lines, x, y, style, 1.38), gap=26)
+    if post.meta:
+        meta = Style(16, color=INK_2)
+        card.add(px(26), lambda canvas, x, y, w: draw_text(canvas, fonts, x, y + px(13), post.meta, meta, anchor="lm"), gap=8)
 
 
 def quoted(card: Card, post: Post) -> None:
-    """A repost keeps the original inside a gray block; the same pieces, slightly smaller."""
+    """A repost keeps the original inside a gray block with a pink bar, under a small kicker."""
     fonts = card.fonts
-    pad = px(14)
-    inner = card.inner - 2 * pad
-    body = Style(14.5)
-    runs = ([Run(post.title + "\n")] if post.title else []) + post.runs
-    has_text = any(r.image is not None or r.text.strip() for r in runs)
-    lines = clip(fonts, layout(fonts, runs, body, inner), body, inner, MAX_BODY_LINES // 2) if has_text else []
-    images = post.images[:9]
-    columns, cell_w, cell_h = grid(len(images), inner) if images else (1, 0, 0)
-    if len(images) == 1:
-        cell_w = cell_h = inner // 2
-    rows = -(-len(images) // columns) if images else 0
-    grid_h = rows * cell_h + max(0, rows - 1) * px(4)
-    height = (pad + px(20) + (px(6) + len(lines) * line_height(body) if lines else 0)
-              + (px(10) + grid_h if images else 0) + pad)
+    pad_left, pad = px(19), px(16)
+    inner = card.inner - pad_left - pad
+    avatar_size = px(23)
+    title_style = Style(15, weight=750, color="#34343d")
+    body = Style(14.5, color=INK_2)
+    title = paragraph(fonts, post.title, title_style, inner, 2)
+    lines = clip(fonts, layout(fonts, post.runs, body, inner), body, inner, MAX_BODY_LINES // 2) if has_text(post.runs) else []
+    block = picture_block(post.images, inner, px(310), px(110)) if post.images else None
+    title_h = len(title) * line_height(title_style, 1.45)
+    body_h = len(lines) * line_height(body, 1.62)
+    height = (pad + px(16) + px(9) + avatar_size + (px(10) + title_h if title else 0) + (px(7) + body_h if lines else 0)
+              + (px(11) + block[0] if block else 0) + pad)
 
     def paint(canvas, x, y, width):
-        ImageDraw.Draw(canvas).rounded_rectangle((x, y, x + width, y + height), radius=px(8), fill=PAGE)
-        right = draw_text(canvas, fonts, x + pad, y + pad, "@" + post.author, Style(13.5, bold=True, color=PRIMARY))
+        box = (x, y, x + width, y + height)
+        fill(canvas, box, px(RADIUS), QUOTE_FILL)
+        ring(canvas, box, px(RADIUS), QUOTE_LINE, max(1, px(0.5)))
+        bar_w = px(3.5)
+        canvas.paste(ramp((bar_w, height - 2 * px(RADIUS)), QUOTE_BAR, vertical=True), (x, y + px(RADIUS)))
+        draw_text(canvas, fonts, x + pad_left, y + pad + px(7), "转发内容", Style(12.5, weight=800, color=LABEL), anchor="lm")
+        top = y + pad + px(16) + px(9)
+        tx = x + pad_left
+        if post.avatar is not None:
+            canvas.alpha_composite(circle(post.avatar, avatar_size), (tx, top))
+            tx += avatar_size + px(7)
+        author_style = Style(14.5, weight=800, color=PINK_TEXT)
+        right = draw_text(canvas, fonts, tx, top + avatar_size // 2, "@" + fit(fonts, post.author, author_style, inner // 2),
+                          author_style, anchor="lm")
         if post.published:
-            draw_text(canvas, fonts, right + px(8), y + pad + px(1), when(post.published, post.timezone),
-                      Style(12, color=MUTED))
-        cy = y + pad + px(20)
+            draw_text(canvas, fonts, right + px(8), top + avatar_size // 2, when(post.published, post.timezone),
+                      Style(12.5, color=MUTED), anchor="lm")
+        cy = top + avatar_size
+        if title:
+            cy = draw_lines(canvas, fonts, title, x + pad_left, cy + px(10), title_style, 1.45)
         if lines:
-            cy = draw_lines(canvas, fonts, lines, x + pad, cy + px(6), body)
-        if images:
-            paint_grid(canvas, images, x + pad, cy + px(10), columns, cell_w, cell_h, radius=6)
+            cy = draw_lines(canvas, fonts, lines, x + pad_left, cy + px(7), body, 1.62)
+        if block:
+            block[1](canvas, x + pad_left, cy + px(11))
 
-    card.add(height, paint)
+    card.add(height, paint, gap=17)
 
 
-def note(card: Card, item: Note) -> None:
+def reservation(card: Card, item: Note) -> None:
+    """The template's additional block: a title with a muted line under it."""
+    fonts = card.fonts
+    pad = px(13)
+    title_style = Style(15.5, weight=700)
+    lines = wrap(fonts, item.title, title_style, card.inner - 2 * pad, max_lines=2) if item.title else []
+    step = line_height(title_style, 1.4)
+    height = 2 * pad + len(lines) * step + px(4) + px(16)
+
+    def paint(canvas, x, y, width):
+        box = (x, y, x + width, y + height)
+        fill(canvas, box, px(RADIUS), PINK_PALE)
+        ring(canvas, box, px(RADIUS), PINK_LINE, max(1, px(0.5)))
+        ty = y + pad
+        for text in lines:
+            draw_text(canvas, fonts, x + pad, ty + step // 2, text, title_style, anchor="lm")
+            ty += step
+        draw_text(canvas, fonts, x + pad, ty + px(12), item.label, Style(13, color=MUTED), anchor="lm")
+
+    card.add(height, paint, gap=17)
+
+
+def comment_context(card: Card, post: Post) -> None:
+    """Where the comment was left, the first thing under the header of a comment card."""
     fonts = card.fonts
     pad = px(12)
-    title_style = Style(14, bold=True)
-    lines = wrap(fonts, item.title, title_style, card.inner - 2 * pad, max_lines=2) if item.title else []
-    step = px(22)
-    height = pad + px(17) + (px(4) + len(lines) * step if lines else 0) + pad
+    action = post.action or ACTION["comment"]
+    style = Style(14, color="#775e68")
+    note = post.note
+    where = f"在{note.label}" + (f"《{note.title}》" if note.title else "") + "下" if note else ""
+    lines = paragraph(fonts, f"{action} · {where}" if where else action, style, card.inner - 2 * pad, 3)
+    height = 2 * pad + len(lines) * line_height(style, 1.55)
 
     def paint(canvas, x, y, width):
-        ImageDraw.Draw(canvas).rounded_rectangle((x, y, x + width, y + height), radius=px(8), fill=PAGE)
-        draw_text(canvas, fonts, x + pad, y + pad, item.label, Style(12.5, color=MUTED))
-        ty = y + pad + px(21)
-        for text in lines:
-            draw_text(canvas, fonts, x + pad, ty, text, title_style)
-            ty += step
+        box = (x, y, x + width, y + height)
+        fill(canvas, box, px(RADIUS), PINK_PALE)
+        ring(canvas, box, px(RADIUS), PINK_LINE, max(1, px(0.5)))
+        draw_lines(canvas, fonts, lines, x + pad, y + pad, style, 1.55)
 
-    card.add(height, paint)
+    card.add(height, paint, gap=19)
 
 
 def stats(card: Card, values: dict) -> None:
-    items = [(label, values[key]) for key, label in (("play", "播放"), ("like", "赞"), ("comment", "评论"), ("forward", "转发"))
-             if key in values]
+    items = [(icon, label, values[key]) for key, icon, label in (
+        ("play", "play", "播放"), ("like", "heart", "点赞"), ("comment", "comment", "评论"), ("forward", "forward", "分享"))
+        if key in values]
     if not items:
         return
+    fonts = card.fonts
+    heading(card, "本条内容", 25)
+    height = px(20)
+    style = Style(14.5, color="#686873")
 
     def paint(canvas, x, y, width):
         cursor = x
-        for label, value in items:
-            cursor = draw_text(canvas, card.fonts, cursor, y, label, Style(12.5, color=MUTED)) + px(4)
-            cursor = draw_text(canvas, card.fonts, cursor, y, compact(value), Style(12.5, bold=True)) + px(16)
+        middle = y + height // 2
+        for icon, label, value in items:
+            draw_icon(canvas, icon, cursor, middle - px(8), px(16), "#62626c")
+            cursor = draw_text(canvas, fonts, cursor + px(22), middle, f"{compact(value)} {label}", style, anchor="lm") + px(25)
 
-    card.add(px(16), paint, gap=12)
+    card.add(height, paint, gap=8)
+    divider(card, 16)
+
+
+def provenance(card: Card, post: Post) -> None:
+    """When the card was made and where the post lives."""
+    fonts = card.fonts
+    stamp = Style(13, color=MUTED)
+
+    def paint(canvas, x, y, width):
+        made = datetime.fromtimestamp(time.time(), ZoneInfo(post.timezone)).strftime("%Y-%m-%d %H:%M:%S")
+        draw_text(canvas, fonts, x, y + px(8), f"图片生成于：{made}", stamp, anchor="lm")
+        if post.url:
+            draw_text(canvas, fonts, x, y + px(30), fit(fonts, post.url, Style(13, color=LINK), width), Style(13, color=LINK),
+                      anchor="lm")
+
+    card.add(px(40 if post.url else 16), paint, gap=13)
+
+
+def profile(post: Post):
+    """The left side of the footer: who posted this."""
+    def paint(canvas, x, y, width, height, fonts):
+        size = px(56)
+        top = y + (height - size) // 2
+        if post.avatar is not None:
+            canvas.alpha_composite(circle(post.avatar, size), (x, top))
+        else:
+            fill(canvas, (x, top, x + size, top + size), size // 2, PINK_LINE)
+        tx = x + size + px(11)
+        room = width - size - px(11)
+        draw_text(canvas, fonts, tx, top + px(7), "UP资料", Style(12.5, weight=800, color=LABEL), anchor="lm")
+        name = Style(17, weight=800, color=PINK)
+        draw_text(canvas, fonts, tx, top + px(28), fit(fonts, post.author, name, room), name, anchor="lm")
+        if post.uid:
+            draw_text(canvas, fonts, tx, top + px(49), f"UID: {post.uid}", Style(12.5, color=MUTED), anchor="lm")
+
+    return paint
+
+
+def qr_image(url: str) -> Image.Image:
+    code = qrcode.QRCode(box_size=4, border=1)
+    code.add_data(url if "://" in url else f"https://{url}")
+    code.make(fit=True)
+    return code.make_image(fill_color="#242424", back_color=SURFACE).convert("RGB")
 
 
 def render_post(post: Post, fonts: Fonts) -> bytes:
-    card = Card(fonts)
-    header(card, post)
-    rich_text(card, post.runs)
-    if post.kind in ("video", "live"):
-        media(card, post)
-    image_grid(card, post.images)
+    comment = post.kind == "comment"
+    card = Card(fonts, strip=5.5 if comment else 7)
+    live = post.kind == "live"
+    published = when(post.published, post.timezone) if post.published else post.action or ACTION[post.kind]
+    author_header(card, post.author, published, avatar=post.avatar, pendant=post.pendant,
+                  kind="" if comment else KIND[post.kind], kind_dot=live)
+    if comment:
+        comment_context(card, post)
+        heading(card, "评论内容", 17)
+        rich_text(card, post.runs, 8)
+        signature(card)
+        return card.render()
+    title_block(card, post)
+    rich_text(card, post.runs, 12 if post.title else 26)
+    pictures(card, post)
     if post.quoted is not None:
         quoted(card, post.quoted)
     if post.note is not None:
-        note(card, post.note)
+        reservation(card, post.note)
     stats(card, post.stats)
-    footer(card, "哔哩哔哩", post.url)
+    provenance(card, post)
+    if post.url:
+        draw_profile = profile(post)
+        qr_block(card, lambda canvas, x, y, width, height: draw_profile(canvas, x, y, width, height, fonts), px(92),
+                 qr_image(post.url))
+    signature(card)
     return card.render()

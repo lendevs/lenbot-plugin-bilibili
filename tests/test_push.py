@@ -212,3 +212,18 @@ async def test_stale_profile_draws_at_once_and_refreshes_beside_it():
     release.set()
     await until(lambda: not push._profile_refreshes)
     assert push.profiles['1'].name == '新名字' and push.profiles['1'].avatar_url == 'a.png' and saved
+
+
+@pytest.mark.parametrize('kind', ['dynamic', 'video', 'repost', 'live', 'comment'])
+def test_every_kind_renders_without_any_picture(kind):
+    from io import BytesIO
+    from PIL import Image as Picture
+    from bilibili_plugin.card_kit import Run, load_fonts
+    from bilibili_plugin.push_card import Note, Post, render_post
+    fonts = load_fonts(Path(__file__).parents[1] / 'assets' / 'NotoSansSC.ttf')
+    post = Post(kind=kind, author='名字特别长的UP主' * 8, avatar=None, published=1793768640, runs=[Run('正文 🎉')],
+                title='标题' * 40, meta='虚拟主播 · 虚拟日常', badge='00:33', stats={'like': 1, 'comment': 0},
+                quoted=Post(kind='dynamic', author='原作者', avatar=None, published=0, runs=[Run('原文')]),
+                note=Note('所属视频', '视频标题'), url='bilibili.com/video/BV1xx')
+    card = render_post(post, fonts)
+    assert Picture.open(BytesIO(card)).size[0] == 1200
