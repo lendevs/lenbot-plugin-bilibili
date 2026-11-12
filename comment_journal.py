@@ -1776,10 +1776,12 @@ class CommentJournal:
 
     @staticmethod
     def _baseline_cutoff(*, resource_published_at: int, entered_at: int) -> int:
+        # 建档前超过宽限期的评论一律视为历史，只记录不推送。
+        # 正常刷新能在宽限期内发现新资源，此时仍以发布时间为分界，保留发布到建档之间的自评；
+        # 重启或暂停恢复后补建档的旧资源不会把建档前的评论当作新评论推送。
+        entry_cutoff = max(0, int(entered_at) - COMMENT_BASELINE_GRACE_SECONDS)
         published_at = max(0, int(resource_published_at or 0))
-        if published_at > 0:
-            return published_at
-        return max(0, int(entered_at) - COMMENT_BASELINE_GRACE_SECONDS)
+        return max(published_at, entry_cutoff)
 
     @staticmethod
     def _resource_from_row(row: sqlite3.Row) -> BilibiliCommentResource:

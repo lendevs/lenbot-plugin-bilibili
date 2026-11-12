@@ -1,5 +1,5 @@
 name = "bilibili"
-version = "1.5.0"
+version = "1.5.1"
 interface = 1
 permissions = ["send", "events", "configure", "quiet"]
 requires_lenbot = ">=0.2.4,<1"

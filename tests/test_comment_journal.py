@@ -449,6 +449,58 @@ class CommentJournalPageCommitTest(CommentJournalLifecycleTest):
         self.assertEqual(result.events_created, 1)
         self.assertEqual(result.deliveries_created, 1)
 
+    def test_late_cataloged_resource_treats_pre_entry_comments_as_history(
+        self,
+    ) -> None:
+        # 重启或暂停恢复后补建档：资源早已发布，建档前数小时的自评不能推送。
+        entered_at = 100_000
+        self.journal.sync_resource_catalog(
+            "100",
+            "测试账号",
+            [video_resource(2003, published_at=entered_at - 36_000)],
+            now=entered_at,
+        )
+        task = self.journal.next_due_scan_task(entered_at)
+        assert task is not None
+        result = self.journal.commit_scan_page(
+            task=task,
+            posts=[
+                BilibiliCommentPost(
+                    id="stale",
+                    author_uid="100",
+                    author_name="测试账号",
+                    text="建档前几小时的自评",
+                    created_at=entered_at - 24_000,
+                    is_reply=False,
+                    root_id="stale",
+                ),
+                BilibiliCommentPost(
+                    id="fresh",
+                    author_uid="100",
+                    author_name="测试账号",
+                    text="建档前几分钟的自评",
+                    created_at=entered_at - 300,
+                    is_reply=False,
+                    root_id="fresh",
+                ),
+            ],
+            target_uids=["100"],
+            target_origins=["origin-a"],
+            now=entered_at + 1,
+            next_cursor="",
+            next_page_index=0,
+            next_sweep_at=entered_at + 181,
+        )
+
+        self.assertEqual(result.events_created, 1)
+        rows = self.journal._connection.execute(
+            "SELECT rpid, baseline FROM observed_comment ORDER BY rpid"
+        ).fetchall()
+        self.assertEqual(
+            {str(row["rpid"]): int(row["baseline"]) for row in rows},
+            {"fresh": 0, "stale": 1},
+        )
+
     def test_reentered_resource_does_not_replay_observed_comment(self) -> None:
         resource = video_resource(2003, published_at=90)
         first_lifecycle = self.journal.sync_resource_catalog(
@@ -521,9 +573,10 @@ class CommentJournalPageCommitTest(CommentJournalLifecycleTest):
             "100",
             "测试账号",
             [video_resource(2003, published_at=1)],
-            now=100_000,
+            # 建档早于两条评论，只验证一天过期规则，不受建档分界影响。
+            now=13_000,
         )
-        task = self.journal.next_due_scan_task(100_000)
+        task = self.journal.next_due_scan_task(13_000)
         assert task is not None
         result = self.journal.commit_scan_page(
             task=task,
