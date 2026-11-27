@@ -65,21 +65,54 @@ async def test_session_start_and_end_become_scene_events(source):
 
 
 @pytest.mark.asyncio
-async def test_a_quiet_room_keeps_its_groups_quiet_while_live(source):
-    source.json("/room", room(0))
-    rooms = [{**config(source)["rooms"][0], "quiet": "defer"}]
-    async with PluginTest(PACKAGE, config={**config(source), "rooms": rooms}) as bot:
+async def test_failed_samples_do_not_extend_live_quiet_deadline(source):
+    now = 1_800_000_000.0
+    source.json('/room', room(0))
+    rooms = [{**config(source)['rooms'][0], 'quiet': 'defer'}]
+    async with PluginTest(PACKAGE, config={**config(source), 'rooms': rooms}, now=lambda: now) as bot:
         await first_poll(bot)
-        plugin = bot.host.plugins["bilibili"]
-        source.json("/room", room(1, "2026-10-05 20:00:00"))
+        plugin = bot.host.plugins['bilibili']
+        source.json('/room', room(1, '2026-10-05 20:00:00'))
         await plugin.instance.poll(plugin.context)
-        # A failed sample keeps the last known status.
-        source.json("/room", {"code": -1}, status=500)
+        assert bot.quiets[-1] == (SCENE, 120, 'defer')
+
+        source.json('/room', {'code': -1}, status=500)
+        now += 30
         await plugin.instance.poll(plugin.context)
-        source.json("/room", room(2))
+        assert bot.quiets[-1] == (SCENE, 90, 'defer')
+        now += 90
         await plugin.instance.poll(plugin.context)
-        assert bot.quiets == [(SCENE, None, "allow"), (SCENE, 120, "defer"), (SCENE, 120, "defer"),
-                              (SCENE, None, "allow")]
+        assert bot.quiets[-1] == (SCENE, None, 'allow')
+
+        source.json('/room', room(1, '2026-10-05 20:00:00'))
+        await plugin.instance.poll(plugin.context)
+        assert bot.quiets[-1] == (SCENE, 120, 'defer')
+        source.json('/room', room(2))
+        await plugin.instance.poll(plugin.context)
+        assert bot.quiets[-1] == (SCENE, None, 'allow')
+
+
+@pytest.mark.asyncio
+async def test_expired_defer_policy_does_not_hide_fresh_allow(source):
+    now = 1_800_000_000.0
+    source.json('/room', room(1, '2026-10-05 20:00:00'))
+    defer = {**config(source)['rooms'][0], 'quiet': 'defer'}
+    allow = {**defer, 'uid': 672328095, 'room_id': 22637262, 'quiet': 'allow'}
+    async with PluginTest(PACKAGE, config={**config(source), 'rooms': [defer, allow]},
+                          now=lambda: now) as bot:
+        await first_poll(bot)
+        plugin = bot.host.plugins['bilibili']
+        sample = plugin.instance.samples[defer['room_id']]
+        now += 60
+        allow_room = sample.room.model_copy(update={'room_id': allow['room_id'], 'uid': allow['uid']})
+        plugin.instance.samples[allow['room_id']] = sample.model_copy(update={'room': allow_room, 'sampled_at': now})
+
+        now += 30
+        await plugin.instance.hold_quiet(plugin.context)
+        assert bot.quiets[-1] == (SCENE, 30, 'defer')
+        now += 30
+        await plugin.instance.hold_quiet(plugin.context)
+        assert bot.quiets[-1] == (SCENE, 60, 'allow')
 
 
 @pytest.mark.asyncio
