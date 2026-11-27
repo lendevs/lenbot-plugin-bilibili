@@ -14,7 +14,7 @@ from .push_card import Post, render_post
 
 STATUS = {0: '未开播', 1: '直播中', 2: '轮播中'}
 MAX_RESPONSE_BYTES = 1_000_000
-# Four samples long: a failed sample keeps the quiet, and it lapses on its own once sampling stops.
+# Four samples long, measured from the last successful sampler reading.
 QUIET_SECONDS = 120
 
 
@@ -100,24 +100,24 @@ class LiveFeature:
         await self.hold_quiet(ctx)
 
     async def hold_quiet(self, ctx: PluginContext) -> None:
-        """Renew the quiet of groups with a live room that asks for it; lift it elsewhere.
-
-        A room whose last sample failed counts by its previous sample.
-        """
-        live: dict[str, str] = {}
-        watched: set[str] = set()
+        """Renew each scene only until the freshest successful sample for its policy expires."""
+        now = ctx.now()
+        remaining_by_scene: dict[str, dict[str, float]] = {}
         for item in self.rooms:
             if item.quiet == 'off':
                 continue
             sample = self.samples.get(item.room_id)
+            remaining = (min(QUIET_SECONDS, sample.sampled_at + QUIET_SECONDS - now)
+                         if sample is not None and sample.room.live_status == 1 else 0.0)
             for scene in self.targets(item):
-                watched.add(scene)
-                if sample is not None and sample.room.live_status == 1:
-                    live[scene] = 'defer' if 'defer' in (item.quiet, live.get(scene)) else 'allow'
-        for scene in sorted(watched):
+                policies = remaining_by_scene.setdefault(scene, {})
+                if remaining > 0:
+                    policies[item.quiet] = max(remaining, policies.get(item.quiet, 0.0))
+        for scene, policies in sorted(remaining_by_scene.items()):
             try:
-                if scene in live:
-                    await ctx.quiet(scene, QUIET_SECONDS, direct=live[scene])
+                if policies:
+                    direct = 'defer' if 'defer' in policies else 'allow'
+                    await ctx.quiet(scene, policies[direct], direct=direct)
                 else:
                     await ctx.quiet(scene, None)
             except Exception as error:
